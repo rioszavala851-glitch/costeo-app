@@ -14,8 +14,22 @@ import Recipes from './pages/Recipes';
 import Categories from './pages/Categories';
 
 function App() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [theme, setTheme] = useState('dark');
+
+  // Handle Window Resize
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (mobile && isSidebarOpen) setIsSidebarOpen(false);
+      if (!mobile && !isSidebarOpen) setIsSidebarOpen(true);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Load saved theme from local storage
   useEffect(() => {
@@ -38,20 +52,57 @@ function App() {
   return (
     <Router>
       <div style={{ display: 'flex', minHeight: '100vh' }}>
-        <Sidebar
-          isOpen={isSidebarOpen}
-          toggleSidebar={toggleSidebar}
-          theme={theme}
-          toggleTheme={toggleTheme}
-        />
+        {/* Mobile Overlay for Sidebar */}
+        {isMobile && isSidebarOpen && (
+          <div
+            onClick={() => setIsSidebarOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40
+            }}
+          />
+        )}
+
+        <div style={{
+          position: isMobile ? 'fixed' : 'sticky',
+          top: 0,
+          height: '100vh',
+          zIndex: 50,
+          transform: isMobile && !isSidebarOpen ? 'translateX(-100%)' : 'none',
+          transition: 'transform 0.3s ease'
+        }}>
+          <Sidebar
+            isOpen={isSidebarOpen}
+            toggleSidebar={toggleSidebar}
+            theme={theme}
+            toggleTheme={toggleTheme}
+          />
+        </div>
+
         <main
           style={{
-            marginLeft: isSidebarOpen ? '260px' : '80px',
-            padding: '2rem',
+            marginLeft: isMobile ? 0 : (isSidebarOpen ? '260px' : '80px'),
+            padding: '1.5rem',
             width: '100%',
-            transition: 'margin-left 0.3s ease'
+            transition: 'margin-left 0.3s ease',
+            flex: 1
           }}
         >
+          {/* Mobile Header with Hamburger */}
+          {isMobile && (
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: '1rem' }}>
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                style={{ background: 'none', border: 'none', color: 'var(--text-primary)', padding: 0 }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="12" x2="21" y2="12"></line>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+              </button>
+              <h3 style={{ margin: 0 }}>CosteoApp</h3>
+            </div>
+          )}
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/ingredients" element={<Ingredients />} />

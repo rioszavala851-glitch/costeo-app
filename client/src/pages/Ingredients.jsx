@@ -412,112 +412,114 @@ const Ingredients = () => {
                         </div>
                     </div>
                 ) : (
-                    <table key="filled-list" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0.8rem', color: 'var(--text-primary)' }}>
-                        <thead>
-                            <tr style={{ textAlign: 'left', color: 'var(--text-secondary)' }}>
-                                <th style={{ padding: '0 1.5rem', fontWeight: '500', fontSize: '0.9rem' }}>Nombre</th>
-                                <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Costo</th>
-                                <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Unidad</th>
-                                <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Rendimiento</th>
-                                <th style={{ padding: '0 1.5rem', fontWeight: '500', fontSize: '0.9rem' }}>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {ingredients.map((ing) => (
-                                <tr key={ing.id} style={{
-                                    background: ing.isActive !== false ? 'var(--bg-secondary)' : 'rgba(0,0,0,0.1)',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-                                    transition: 'all 0.2s',
-                                    opacity: ing.isActive !== false ? 1 : 0.6
-                                }}>
-                                    <td style={{ padding: '1rem 1.5rem', borderTopLeftRadius: '1rem', borderBottomLeftRadius: '1rem', fontWeight: '500' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            {ing.name}
-                                            {ing.isActive === false && <span style={{ fontSize: '0.7rem', background: 'var(--danger)', color: 'white', padding: '0.1rem 0.5rem', borderRadius: '1rem' }}>Inactivo</span>}
-                                        </div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>{ing.category || 'General'}</div>
-                                    </td>
-                                    <td style={{ padding: '1rem', fontWeight: 'bold' }}>${Number(ing.price).toFixed(2)}</td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <span style={{
-                                            background: 'rgba(59, 130, 246, 0.1)',
-                                            color: 'var(--accent-color)',
-                                            padding: '0.25rem 0.75rem',
-                                            borderRadius: '2rem',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 'bold',
-                                            textTransform: 'uppercase'
-                                        }}>
-                                            {ing.unit}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '1rem' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <div style={{ flex: 1, height: '6px', background: 'var(--bg-primary)', borderRadius: '3px', maxWidth: '80px', overflow: 'hidden' }}>
-                                                <div style={{ width: `${ing.yield}% `, height: '100%', background: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}></div>
-                                            </div>
-                                            <span style={{ fontSize: '0.85rem', color: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}>{ing.yield}%</span>
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '1rem 1.5rem', borderTopRightRadius: '1rem', borderBottomRightRadius: '1rem', color: 'var(--text-secondary)' }}>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            <button
-                                                onClick={() => handleEditIngredient(ing)}
-                                                title="Editar Detalles"
-                                                style={{
-                                                    background: 'rgba(59, 130, 246, 0.1)',
-                                                    border: '1px solid var(--accent-color)',
-                                                    cursor: 'pointer',
-                                                    color: 'var(--accent-color)',
-                                                    padding: '0.4rem',
-                                                    borderRadius: '0.5rem',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}
-                                            >
-                                                <Pencil size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleUpdatePrice(ing.id, ing.price)}
-                                                title="Modificar Precio"
-                                                style={{
-                                                    background: 'rgba(16, 185, 129, 0.1)',
-                                                    border: '1px solid var(--success)',
-                                                    cursor: 'pointer',
-                                                    color: 'var(--success)',
-                                                    padding: '0.4rem',
-                                                    borderRadius: '0.5rem',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}
-                                            >
-                                                <DollarSign size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => handleToggleActive(ing.id)}
-                                                title={ing.isActive !== false ? "Inhabilitar" : "Habilitar"}
-                                                style={{
-                                                    background: ing.isActive !== false ? 'rgba(239, 68, 68, 0.1)' : 'rgba(148, 163, 184, 0.1)',
-                                                    border: ing.isActive !== false ? '1px solid var(--danger)' : '1px solid var(--text-secondary)',
-                                                    cursor: 'pointer',
-                                                    color: ing.isActive !== false ? 'var(--danger)' : 'var(--text-secondary)',
-                                                    padding: '0.4rem',
-                                                    borderRadius: '0.5rem',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}
-                                            >
-                                                {ing.isActive !== false ? <Ban size={16} /> : <CheckCircle size={16} />}
-                                            </button>
-                                        </div>
-                                    </td>
+                    <div className="table-container">
+                        <table key="filled-list" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0.8rem', color: 'var(--text-primary)' }}>
+                            <thead>
+                                <tr style={{ textAlign: 'left', color: 'var(--text-secondary)' }}>
+                                    <th style={{ padding: '0 1.5rem', fontWeight: '500', fontSize: '0.9rem' }}>Nombre</th>
+                                    <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Costo</th>
+                                    <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Unidad</th>
+                                    <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Rendimiento</th>
+                                    <th style={{ padding: '0 1.5rem', fontWeight: '500', fontSize: '0.9rem' }}>Acciones</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {ingredients.map((ing) => (
+                                    <tr key={ing.id} style={{
+                                        background: ing.isActive !== false ? 'var(--bg-secondary)' : 'rgba(0,0,0,0.1)',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                                        transition: 'all 0.2s',
+                                        opacity: ing.isActive !== false ? 1 : 0.6
+                                    }}>
+                                        <td style={{ padding: '1rem 1.5rem', borderTopLeftRadius: '1rem', borderBottomLeftRadius: '1rem', fontWeight: '500' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                {ing.name}
+                                                {ing.isActive === false && <span style={{ fontSize: '0.7rem', background: 'var(--danger)', color: 'white', padding: '0.1rem 0.5rem', borderRadius: '1rem' }}>Inactivo</span>}
+                                            </div>
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>{ing.category || 'General'}</div>
+                                        </td>
+                                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>${Number(ing.price).toFixed(2)}</td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span style={{
+                                                background: 'rgba(59, 130, 246, 0.1)',
+                                                color: 'var(--accent-color)',
+                                                padding: '0.25rem 0.75rem',
+                                                borderRadius: '2rem',
+                                                fontSize: '0.75rem',
+                                                fontWeight: 'bold',
+                                                textTransform: 'uppercase'
+                                            }}>
+                                                {ing.unit}
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <div style={{ flex: 1, height: '6px', background: 'var(--bg-primary)', borderRadius: '3px', maxWidth: '80px', overflow: 'hidden' }}>
+                                                    <div style={{ width: `${ing.yield}% `, height: '100%', background: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}></div>
+                                                </div>
+                                                <span style={{ fontSize: '0.85rem', color: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}>{ing.yield}%</span>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1rem 1.5rem', borderTopRightRadius: '1rem', borderBottomRightRadius: '1rem', color: 'var(--text-secondary)' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button
+                                                    onClick={() => handleEditIngredient(ing)}
+                                                    title="Editar Detalles"
+                                                    style={{
+                                                        background: 'rgba(59, 130, 246, 0.1)',
+                                                        border: '1px solid var(--accent-color)',
+                                                        cursor: 'pointer',
+                                                        color: 'var(--accent-color)',
+                                                        padding: '0.4rem',
+                                                        borderRadius: '0.5rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    <Pencil size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleUpdatePrice(ing.id, ing.price)}
+                                                    title="Modificar Precio"
+                                                    style={{
+                                                        background: 'rgba(16, 185, 129, 0.1)',
+                                                        border: '1px solid var(--success)',
+                                                        cursor: 'pointer',
+                                                        color: 'var(--success)',
+                                                        padding: '0.4rem',
+                                                        borderRadius: '0.5rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    <DollarSign size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleActive(ing.id)}
+                                                    title={ing.isActive !== false ? "Inhabilitar" : "Habilitar"}
+                                                    style={{
+                                                        background: ing.isActive !== false ? 'rgba(239, 68, 68, 0.1)' : 'rgba(148, 163, 184, 0.1)',
+                                                        border: ing.isActive !== false ? '1px solid var(--danger)' : '1px solid var(--text-secondary)',
+                                                        cursor: 'pointer',
+                                                        color: ing.isActive !== false ? 'var(--danger)' : 'var(--text-secondary)',
+                                                        padding: '0.4rem',
+                                                        borderRadius: '0.5rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    {ing.isActive !== false ? <Ban size={16} /> : <CheckCircle size={16} />}
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 
