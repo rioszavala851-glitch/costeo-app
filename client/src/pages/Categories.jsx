@@ -2,33 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Tag, Trash2, X, Save, Pencil } from 'lucide-react';
 
 const Categories = () => {
-    const [categories, setCategories] = useState(() => {
-        const saved = localStorage.getItem('categories');
-        return saved ? JSON.parse(saved) : [];
-    });
-
+    const [categories, setCategories] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [newCategory, setNewCategory] = useState({ name: '', description: '' });
 
-    useEffect(() => {
-        localStorage.setItem('categories', JSON.stringify(categories));
-    }, [categories]);
+    const fetchCategories = async () => {
+        try {
+            const res = await fetch('/api/categories');
+            const data = await res.json();
+            setCategories(data.map(cat => ({ ...cat, id: cat._id })));
+        } catch (error) {
+            console.error('Error loading categories:', error);
+        }
+    };
 
-    const handleSaveCategory = (e) => {
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const handleSaveCategory = async (e) => {
         e.preventDefault();
 
-        if (editingId) {
-            setCategories(categories.map(cat =>
-                cat.id === editingId ? { ...newCategory, id: editingId } : cat
-            ));
-        } else {
-            setCategories([...categories, { ...newCategory, id: Date.now() }]);
+        try {
+            if (editingId) {
+                await fetch(`/api/categories/${editingId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newCategory)
+                });
+            } else {
+                await fetch('/api/categories', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newCategory)
+                });
+            }
+            fetchCategories();
+            setIsAdding(false);
+            setEditingId(null);
+            setNewCategory({ name: '', description: '' });
+        } catch (error) {
+            console.error('Error saving category:', error);
         }
-
-        setIsAdding(false);
-        setEditingId(null);
-        setNewCategory({ name: '', description: '' });
     };
 
     const handleEdit = (cat) => {
@@ -37,9 +53,14 @@ const Categories = () => {
         setIsAdding(true);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (confirm('¿Estás seguro de eliminar esta categoría?')) {
-            setCategories(categories.filter(cat => cat.id !== id));
+            try {
+                await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+                fetchCategories();
+            } catch (error) {
+                console.error('Error deleting category:', error);
+            }
         }
     };
 

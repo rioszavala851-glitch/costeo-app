@@ -20,6 +20,7 @@ app.use('/api/ingredients', require('./routes/ingredients'));
 app.use('/api/subrecipes', require('./routes/subrecipes'));
 app.use('/api/recipes', require('./routes/recipes'));
 app.use('/api/users', require('./routes/users'));
+app.use('/api/categories', require('./routes/categories'));
 app.use('/api/cloud-recipes', require('./routes/cloudRecipes'));
 
 // Serve static assets in production
