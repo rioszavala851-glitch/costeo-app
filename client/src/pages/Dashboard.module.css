@@ -1,0 +1,112 @@
+/* Dashboard Styles */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.titleContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.title {
+    margin: 0;
+    font-size: 1.8rem;
+}
+
+.subtitle {
+    margin: 0.25rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.statCard {
+    /* Gradients will be handled via inline style or separate classes for now to keep it simple, 
+       or generic valid CSS here */
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.statHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.statLabel {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.statValue {
+    margin: 0.5rem 0 0;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.section {
+    /* Inherits from card in global CSS if we use compose, but plain CSS modules doesn't usually do that without setup.
+       We will manually add the class 'card' in JSX. */
+    margin-bottom: 2rem;
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+}
+
+.tableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    min-width: 600px;
+    /* Ensure scroll on mobile */
+}
+
+.th {
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    padding: 0.75rem;
+}
+
+.td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+/* Mobile First Adjustments if needed specifically */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+}

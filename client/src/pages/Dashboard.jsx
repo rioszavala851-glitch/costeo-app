@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, DollarSign, Package } from 'lucide-react';
+import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
     const [ingredients, setIngredients] = useState([]);
@@ -29,50 +30,50 @@ const Dashboard = () => {
 
     return (
         <div className="animate-fade-in">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div className={styles.header}>
                 <div style={{ background: 'var(--accent-color)', padding: '0.75rem', borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)' }}>
                     <LayoutDashboard size={28} color="white" />
                 </div>
-                <div>
-                    <h1 style={{ margin: 0, fontSize: '1.8rem' }}>Dashboard</h1>
-                    <p style={{ margin: '0.25rem 0 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Resumen general de tu sistema de costeo</p>
+                <div className={styles.titleContainer}>
+                    <h1 className={styles.title}>Dashboard</h1>
+                    <p className={styles.subtitle}>Resumen general de tu sistema de costeo</p>
                 </div>
             </div>
 
             {/* Summary Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                <div className="card" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className={styles.statsGrid}>
+                <div className={`card ${styles.statCard}`} style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                    <div className={styles.statHeader}>
                         <div>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Ingredientes</p>
-                            <h2 style={{ margin: '0.5rem 0 0', fontSize: '2rem' }}>{totalIngredients}</h2>
+                            <p className={styles.statLabel}>Ingredientes</p>
+                            <h2 className={styles.statValue}>{totalIngredients}</h2>
                         </div>
                         <Package size={32} color="var(--accent-color)" style={{ opacity: 0.7 }} />
                     </div>
                 </div>
-                <div className="card" style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className={`card ${styles.statCard}`} style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                    <div className={styles.statHeader}>
                         <div>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Sub-recetas</p>
-                            <h2 style={{ margin: '0.5rem 0 0', fontSize: '2rem' }}>{totalSubRecipes}</h2>
+                            <p className={styles.statLabel}>Sub-recetas</p>
+                            <h2 className={styles.statValue}>{totalSubRecipes}</h2>
                         </div>
                         <ChefHat size={32} color="#8b5cf6" style={{ opacity: 0.7 }} />
                     </div>
                 </div>
-                <div className="card" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className={`card ${styles.statCard}`} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    <div className={styles.statHeader}>
                         <div>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Recetas</p>
-                            <h2 style={{ margin: '0.5rem 0 0', fontSize: '2rem' }}>{totalRecipes}</h2>
+                            <p className={styles.statLabel}>Recetas</p>
+                            <h2 className={styles.statValue}>{totalRecipes}</h2>
                         </div>
                         <UtensilsCrossed size={32} color="var(--success)" style={{ opacity: 0.7 }} />
                     </div>
                 </div>
-                <div className="card" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className={`card ${styles.statCard}`} style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                    <div className={styles.statHeader}>
                         <div>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Margen Promedio</p>
-                            <h2 style={{ margin: '0.5rem 0 0', fontSize: '2rem' }}>{avgRecipeMargin.toFixed(1)}%</h2>
+                            <p className={styles.statLabel}>Margen Promedio</p>
+                            <h2 className={styles.statValue}>{avgRecipeMargin.toFixed(1)}%</h2>
                         </div>
                         <TrendingUp size={32} color="#f59e0b" style={{ opacity: 0.7 }} />
                     </div>
@@ -80,31 +81,31 @@ const Dashboard = () => {
             </div>
 
             {/* Sub-Recipes Section */}
-            <div className="card" style={{ marginBottom: '2rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div className={`card ${styles.section}`}>
+                <div className={styles.sectionHeader}>
                     <ChefHat size={24} color="#8b5cf6" />
-                    <h3 style={{ margin: 0 }}>Sub-recetas</h3>
+                    <h3 className={styles.sectionTitle}>Sub-recetas</h3>
                 </div>
                 {subRecipes.length === 0 ? (
                     <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No hay sub-recetas creadas aún.</p>
                 ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
                             <thead>
-                                <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                                    <th style={{ padding: '0.75rem' }}>Nombre</th>
-                                    <th style={{ padding: '0.75rem' }}>Costo Total</th>
-                                    <th style={{ padding: '0.75rem' }}>Rendimiento</th>
-                                    <th style={{ padding: '0.75rem' }}>Costo Unitario</th>
+                                <tr>
+                                    <th className={styles.th}>Nombre</th>
+                                    <th className={styles.th}>Costo Total</th>
+                                    <th className={styles.th}>Rendimiento</th>
+                                    <th className={styles.th}>Costo Unitario</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {subRecipes.slice(0, 5).map(sub => (
-                                    <tr key={sub.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                                        <td style={{ padding: '0.75rem', fontWeight: '500' }}>{sub.name}</td>
-                                        <td style={{ padding: '0.75rem' }}>${(sub.cost || 0).toFixed(2)}</td>
-                                        <td style={{ padding: '0.75rem' }}>{sub.yield} {sub.unit}</td>
-                                        <td style={{ padding: '0.75rem', color: 'var(--success)', fontWeight: 'bold' }}>
+                                    <tr key={sub.id}>
+                                        <td className={styles.td} style={{ fontWeight: '500' }}>{sub.name}</td>
+                                        <td className={styles.td}>${(sub.cost || 0).toFixed(2)}</td>
+                                        <td className={styles.td}>{sub.yield} {sub.unit}</td>
+                                        <td className={styles.td} style={{ color: 'var(--success)', fontWeight: 'bold' }}>
                                             ${((sub.cost || 0) / (parseFloat(sub.yield) || 1)).toFixed(2)}/{sub.unit}
                                         </td>
                                     </tr>
@@ -121,33 +122,33 @@ const Dashboard = () => {
             </div>
 
             {/* Recipes Section */}
-            <div className="card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <div className={`card ${styles.section}`}>
+                <div className={styles.sectionHeader}>
                     <UtensilsCrossed size={24} color="var(--success)" />
-                    <h3 style={{ margin: 0 }}>Recetas / Platillos</h3>
+                    <h3 className={styles.sectionTitle}>Recetas / Platillos</h3>
                 </div>
                 {recipes.length === 0 ? (
                     <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No hay recetas creadas aún.</p>
                 ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
                             <thead>
-                                <tr style={{ textAlign: 'left', borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
-                                    <th style={{ padding: '0.75rem' }}>Platillo</th>
-                                    <th style={{ padding: '0.75rem' }}>Costo</th>
-                                    <th style={{ padding: '0.75rem' }}>Precio Venta</th>
-                                    <th style={{ padding: '0.75rem' }}>Margen</th>
+                                <tr>
+                                    <th className={styles.th}>Platillo</th>
+                                    <th className={styles.th}>Costo</th>
+                                    <th className={styles.th}>Precio Venta</th>
+                                    <th className={styles.th}>Margen</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {recipes.slice(0, 5).map(r => {
                                     const margin = r.sellingPrice > 0 ? ((r.sellingPrice - r.costPerPortion) / r.sellingPrice) * 100 : 0;
                                     return (
-                                        <tr key={r.id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                                            <td style={{ padding: '0.75rem', fontWeight: '500' }}>{r.name}</td>
-                                            <td style={{ padding: '0.75rem' }}>${(r.costPerPortion || 0).toFixed(2)}</td>
-                                            <td style={{ padding: '0.75rem' }}>${(r.sellingPrice || 0).toFixed(2)}</td>
-                                            <td style={{ padding: '0.75rem' }}>
+                                        <tr key={r.id}>
+                                            <td className={styles.td} style={{ fontWeight: '500' }}>{r.name}</td>
+                                            <td className={styles.td}>${(r.costPerPortion || 0).toFixed(2)}</td>
+                                            <td className={styles.td}>${(r.sellingPrice || 0).toFixed(2)}</td>
+                                            <td className={styles.td}>
                                                 <span style={{
                                                     color: margin > 30 ? 'var(--success)' : (margin > 0 ? 'var(--warning)' : 'var(--danger)'),
                                                     fontWeight: 'bold'
