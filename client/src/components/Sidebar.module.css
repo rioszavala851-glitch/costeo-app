@@ -1,0 +1,154 @@
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transition: width 0.3s ease;
+    z-index: 100;
+    overflow-x: hidden;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+    padding: 1.5rem 0.75rem;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    height: 40px;
+    padding: 0 0.5rem;
+}
+
+.logoText {
+    color: var(--accent-color);
+    font-weight: bold;
+    font-size: 1.5rem;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 0.2s;
+}
+
+.collapsed .logoText {
+    display: none;
+}
+
+.toggleBtn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    margin-left: auto;
+}
+
+.toggleBtn:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
+
+.alert {
+    /* Helper to center toggle when collapsed */
+}
+
+.collapsed .toggleBtn {
+    margin: 0 auto;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.collapsed .link {
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+.icon {
+    flex-shrink: 0;
+}
+
+.labelText {
+    transition: opacity 0.2s;
+    opacity: 1;
+}
+
+.collapsed .labelText {
+    opacity: 0;
+    width: 0;
+    display: none;
+}
+
+.link:hover {
+    background-color: rgba(125, 125, 125, 0.1);
+    color: var(--text-primary);
+}
+
+.active {
+    background-color: var(--accent-color);
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+}
+
+.active:hover {
+    background-color: var(--accent-hover);
+}
+
+.footer {
+    border-top: 1px solid var(--glass-border);
+    padding-top: 1rem;
+}
+
+.themeBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    border-radius: var(--radius);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.collapsed .themeBtn {
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+.themeBtn:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+}
