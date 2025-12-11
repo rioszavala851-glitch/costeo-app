@@ -409,10 +409,6 @@ const Ingredients = () => {
                             <button onClick={() => setIsAdding(true)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 'bold' }}>
                                 Agregar mi primer ingrediente
                             </button>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>o</span>
-                            <button onClick={loadTestData} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.9rem' }}>
-                                🔄 Cargar datos de prueba
-                            </button>
                         </div>
                     </div>
                 ) : (
