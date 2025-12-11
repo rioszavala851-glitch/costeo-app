@@ -14,21 +14,29 @@ import Recipes from './pages/Recipes';
 import Categories from './pages/Categories';
 
 function App() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(window.matchMedia('(max-width: 1024px)').matches);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!window.matchMedia('(max-width: 1024px)').matches);
   const [theme, setTheme] = useState('dark');
 
-  // Handle Window Resize
+  // Handle Window Resize via MediaQuery
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      if (mobile && isSidebarOpen) setIsSidebarOpen(false);
-      if (!mobile && !isSidebarOpen) setIsSidebarOpen(true);
+    const mediaQuery = window.matchMedia('(max-width: 1024px)');
+
+    const handleChange = (e) => {
+      setIsMobile(e.matches);
+      if (e.matches) {
+        setIsSidebarOpen(false); // Mobile: Default closed
+      } else {
+        setIsSidebarOpen(true); // Desktop: Default open
+      }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    // Sync initial state
+    setIsMobile(mediaQuery.matches);
+
+    // Listener
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
   // Load saved theme from local storage

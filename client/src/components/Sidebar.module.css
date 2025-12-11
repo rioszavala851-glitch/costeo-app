@@ -152,3 +152,34 @@
     background: var(--bg-card);
     color: var(--text-primary);
 }
+
+/* Mobile Override: Always look expanded if open in overlay mode */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 260px !important;
+    }
+
+    .sidebar.collapsed {
+        width: 260px !important;
+        /* Force width even if class is present (though app logic should hide it if closed) */
+    }
+
+    .collapsed .logoText,
+    .collapsed .labelText,
+    .collapsed .toggleBtn {
+        display: flex !important;
+        opacity: 1 !important;
+        width: auto !important;
+        margin-left: 0;
+    }
+
+    .collapsed .link {
+        justify-content: flex-start !important;
+        padding: 0.75rem 1rem !important;
+    }
+
+    /* Hide the internal chevron toggle on mobile since we use overlay click to close */
+    .toggleBtn {
+        display: none !important;
+    }
+}
