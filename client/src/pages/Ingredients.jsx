@@ -43,13 +43,11 @@ const recalculateSubRecipeCost = (subRecipe, ingredientsMap) => {
 };
 
 const Ingredients = () => {
-    // Placeholder state for ingredients
-    const [ingredients, setIngredients] = useState(() => {
-        const saved = localStorage.getItem('ingredients');
-        return saved ? JSON.parse(saved) : [];
-    });
+    // State for ingredients
+    const [ingredients, setIngredients] = useState([]);
 
-    // Load sub-recipes to display them as ingredients
+    // Load sub-recipes (keeping localStorage for now as requested/out of scope for this specific file refactor, 
+    // but ideally should be API too. For now we focus on ingredients sync).
     const [subRecipes, setSubRecipes] = useState(() => {
         const saved = localStorage.getItem('subRecipes');
         return saved ? JSON.parse(saved) : [];
@@ -59,27 +57,123 @@ const Ingredients = () => {
     const [editingId, setEditingId] = useState(null);
     const [newIngredient, setNewIngredient] = useState({ name: '', price: '', unit: 'kg', yield: 100, category: 'general' });
 
+    // Fetch ingredients from API
+    const fetchIngredients = async () => {
+        try {
+            const res = await fetch('/api/ingredients');
+            if (!res.ok) throw new Error('Error al cargar ingredientes');
+            const data = await res.json();
 
+            // Map backend fields to frontend state
+            const mapped = data.map(ing => ({
+                ...ing,
+                id: ing._id, // Use MongoDB _id as frontend id
+                price: ing.cost // Map cost to price
+            }));
+            setIngredients(mapped);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
-        localStorage.setItem('ingredients', JSON.stringify(ingredients));
-    }, [ingredients]);
+        fetchIngredients();
+    }, []);
 
-    // Refresh sub-recipes every time we render or adding a listener would be better
-    // For now, trusting the initial load.
+    // Also reload whenever subRecipes change if needed, but for now just initial load.
 
-    const loadTestData = () => {
-        const testData = [
-            { id: 1, name: 'Tomate Saladet', price: 28.50, unit: 'kg', yield: 95, category: 'Vegetales', isActive: true },
-            { id: 2, name: 'Cebolla Blanca', price: 18.00, unit: 'kg', yield: 90, category: 'Vegetales', isActive: true },
-            { id: 3, name: 'Ajo Pelado', price: 120.00, unit: 'kg', yield: 100, category: 'Vegetales', isActive: true },
-            { id: 4, name: 'Aceite de Oliva', price: 180.00, unit: 'lt', yield: 100, category: 'Abarrotes', isActive: true },
-            { id: 5, name: 'Sal de Mar', price: 15.00, unit: 'kg', yield: 100, category: 'Abarrotes', isActive: true },
-            { id: 6, name: 'Pimienta Negra', price: 450.00, unit: 'kg', yield: 100, category: 'Especias', isActive: true },
-            { id: 7, name: 'Harina de Trigo', price: 14.50, unit: 'kg', yield: 100, category: 'Abarrotes', isActive: true },
-            { id: 8, name: 'Huevo Blanco', price: 3.50, unit: 'pz', yield: 100, category: 'Proteina', isActive: true },
-        ];
-        setIngredients(testData);
+    const handleSaveManual = async (e) => {
+        e.preventDefault();
+
+        // Prepare payload
+        const payload = {
+            name: newIngredient.name,
+            unit: newIngredient.unit,
+            cost: Number(newIngredient.price), // backend expects 'cost' or 'price', we send cost for clarity
+            yield: Number(newIngredient.yield),
+            category: newIngredient.category,
+            isActive: true
+        };
+
+        try {
+            if (editingId) {
+                // UPDATE
+                const res = await fetch(`/api/ingredients/${editingId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Error al actualizar');
+                alert("Ingrediente actualizado correctamente");
+            } else {
+                // CREATE
+                const res = await fetch('/api/ingredients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Error al crear');
+                alert("Ingrediente agregado correctamente");
+            }
+            // Refresh list
+            fetchIngredients();
+        } catch (error) {
+            console.error(error);
+            alert("Hubo un error al guardar.");
+        }
+
+        setIsAdding(false);
+        setEditingId(null);
+        setNewIngredient({ name: '', price: '', unit: 'kg', yield: 100, category: 'general' });
+    };
+
+    const handleEditIngredient = (ing) => {
+        setNewIngredient({
+            name: ing.name,
+            price: ing.price,
+            unit: ing.unit,
+            yield: ing.yield,
+            category: ing.category || 'general'
+        });
+        setEditingId(ing.id); // This is the _id from fetching
+        setIsAdding(true);
+    };
+
+    const handleUpdatePrice = async (id, currentPrice) => {
+        const newPrice = prompt("Ingrese el nuevo costo del ingrediente:", currentPrice);
+        if (newPrice !== null && !isNaN(newPrice) && newPrice.trim() !== "") {
+            try {
+                const res = await fetch(`/api/ingredients/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cost: parseFloat(newPrice) })
+                });
+                if (res.ok) {
+                    fetchIngredients();
+                } else {
+                    alert("Error al actualizar precio");
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    };
+
+    const handleToggleActive = async (id) => {
+        if (!window.confirm("¿Seguro que deseas eliminar este ingrediente?")) return;
+
+        try {
+            const res = await fetch(`/api/ingredients/${id}`, {
+                method: 'DELETE'
+            });
+            if (res.ok) {
+                fetchIngredients();
+            } else {
+                alert("Error al eliminar");
+            }
+        } catch (error) {
+            console.error(error);
+        }
     };
 
     // Mock function to download template
@@ -102,7 +196,7 @@ const Ingredients = () => {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (evt) => {
+        reader.onload = async (evt) => {
             try {
                 const data = new Uint8Array(evt.target.result);
                 const wb = XLSX.read(data, { type: 'array' });
@@ -110,73 +204,38 @@ const Ingredients = () => {
                 const ws = wb.Sheets[wsname];
                 const jsonData = XLSX.utils.sheet_to_json(ws);
 
-                // Map Excel data to App state format
-                const mappedIngredients = jsonData.map((row) => ({
-                    id: Date.now() + Math.random(), // Robust unique ID
-                    name: row['Nombre'] || row['nombre'] || 'Sin Nombre',
-                    price: row['Costo'] || row['costo'] || 0,
-                    unit: (row['Unidad'] || row['unidad'] || 'kg').toLowerCase(),
-                    yield: row['Rendimiento(%)'] || row['rendimiento'] || 100,
-                    category: row['Categoria'] || row['categoria'] || 'general',
-                    isActive: true
-                }));
+                // Iterate and save to DB
+                let count = 0;
+                for (const row of jsonData) {
+                    const payload = {
+                        name: row['Nombre'] || row['nombre'] || 'Sin Nombre',
+                        unit: (row['Unidad'] || row['unidad'] || 'kg').toLowerCase(),
+                        cost: Number(row['Costo'] || row['costo'] || 0),
+                        yield: Number(row['Rendimiento(%)'] || row['rendimiento'] || 100),
+                        category: row['Categoria'] || row['categoria'] || 'general',
+                        isActive: true
+                    };
 
-                setIngredients(prev => [...prev, ...mappedIngredients]);
-                alert(`Se importaron ${mappedIngredients.length} ingredientes exitosamente.`);
+                    try {
+                        await fetch('/api/ingredients', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        count++;
+                    } catch (err) {
+                        console.error("Error saving row:", row, err);
+                    }
+                }
+
+                alert(`Se importaron ${count} ingredientes exitosamente.`);
+                fetchIngredients();
             } catch (error) {
                 console.error("Error al leer el archivo:", error);
                 alert("Error al procesar el archivo. Asegúrate que sea un Excel válido.");
             }
         };
         reader.readAsArrayBuffer(file);
-    };
-
-    const handleSaveManual = (e) => {
-        e.preventDefault();
-
-        const ingredientData = {
-            ...newIngredient,
-            isActive: true
-        };
-
-        if (editingId) {
-            setIngredients(ingredients.map(ing => ing.id === editingId ? { ...ingredientData, id: editingId } : ing));
-            alert("Ingrediente actualizado correctamente");
-        } else {
-            setIngredients([...ingredients, { ...ingredientData, id: Date.now() }]);
-            alert("Ingrediente agregado correctamente");
-        }
-
-        setIsAdding(false);
-        setEditingId(null);
-        setNewIngredient({ name: '', price: '', unit: 'kg', yield: 100, category: 'general' });
-    };
-
-    const handleEditIngredient = (ing) => {
-        setNewIngredient({
-            name: ing.name,
-            price: ing.price,
-            unit: ing.unit,
-            yield: ing.yield,
-            category: ing.category || 'general'
-        });
-        setEditingId(ing.id);
-        setIsAdding(true);
-    };
-
-    const handleUpdatePrice = (id, currentPrice) => {
-        const newPrice = prompt("Ingrese el nuevo costo del ingrediente:", currentPrice);
-        if (newPrice !== null && !isNaN(newPrice) && newPrice.trim() !== "") {
-            setIngredients(ingredients.map(ing =>
-                ing.id === id ? { ...ing, price: parseFloat(newPrice) } : ing
-            ));
-        }
-    };
-
-    const handleToggleActive = (id) => {
-        setIngredients(ingredients.map(ing =>
-            ing.id === id ? { ...ing, isActive: !ing.isActive } : ing
-        ));
     };
 
     const ingredientsMap = React.useMemo(() => {

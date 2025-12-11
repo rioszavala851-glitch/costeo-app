@@ -19,6 +19,14 @@ const IngredientSchema = new mongoose.Schema({
         required: true,
         default: 100
     },
+    category: {
+        type: String,
+        default: 'general'
+    },
+    isActive: {
+        type: Boolean,
+        default: true
+    },
     isSubRecipe: {
         type: Boolean,
         default: false
