@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, FileSpreadsheet, Search, Filter, Download, Save, X, DollarSign, Ban, CheckCircle, Pencil, ChefHat } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import styles from './Ingredients.module.css';
 
 /**
  * Recalcula el costo total de una sub-receta basándose en sus ingredientes
@@ -244,10 +245,10 @@ const Ingredients = () => {
 
     return (
         <div className="animate-fade-in">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h1 style={{ margin: 0 }}>Ingredientes</h1>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Ingredientes</h1>
 
-                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div className={styles.actions}>
                     {/* Botón Descargar Plantilla */}
                     <button
                         onClick={handleDownloadTemplate}
@@ -374,23 +375,14 @@ const Ingredients = () => {
                 </div>
             )}
 
-            {/* Filtros y Búsqueda - Fixed Layout */}
-            <div className="card" style={{ marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center', padding: '1rem' }}>
-                <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-                    <Search size={20} style={{ position: 'absolute', left: '1rem', color: 'var(--text-secondary)', pointerEvents: 'none' }} />
+            {/* Filtros y Búsqueda */}
+            <div className={styles.searchContainer}>
+                <div className={styles.searchInputWrapper}>
+                    <Search size={20} className={styles.searchIcon} />
                     <input
                         type="text"
                         placeholder="Buscar ingrediente..."
-                        style={{
-                            width: '100%',
-                            padding: '0.75rem 0.75rem 0.75rem 3rem',
-                            borderRadius: 'var(--radius)',
-                            border: '1px solid var(--glass-border)',
-                            background: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            outline: 'none',
-                            boxSizing: 'border-box' // Ensure padding doesn't break width
-                        }}
+                        className={styles.searchInput}
                     />
                 </div>
                 <button style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', background: 'var(--bg-primary)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)', color: 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
@@ -412,34 +404,31 @@ const Ingredients = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="table-container">
-                        <table key="filled-list" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 0.8rem', color: 'var(--text-primary)' }}>
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
                             <thead>
-                                <tr style={{ textAlign: 'left', color: 'var(--text-secondary)' }}>
-                                    <th style={{ padding: '0 1.5rem', fontWeight: '500', fontSize: '0.9rem' }}>Nombre</th>
-                                    <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Costo</th>
-                                    <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Unidad</th>
-                                    <th style={{ padding: '0 1rem', fontWeight: '500', fontSize: '0.9rem' }}>Rendimiento</th>
-                                    <th style={{ padding: '0 1.5rem', fontWeight: '500', fontSize: '0.9rem' }}>Acciones</th>
+                                <tr>
+                                    <th className={styles.th}>Nombre</th>
+                                    <th className={styles.th}>Costo</th>
+                                    <th className={styles.th}>Unidad</th>
+                                    <th className={styles.th}>Rendimiento</th>
+                                    <th className={styles.th}>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {ingredients.map((ing) => (
-                                    <tr key={ing.id} style={{
-                                        background: ing.isActive !== false ? 'var(--bg-secondary)' : 'rgba(0,0,0,0.1)',
-                                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-                                        transition: 'all 0.2s',
-                                        opacity: ing.isActive !== false ? 1 : 0.6
-                                    }}>
-                                        <td style={{ padding: '1rem 1.5rem', borderTopLeftRadius: '1rem', borderBottomLeftRadius: '1rem', fontWeight: '500' }}>
+                                    <tr key={ing.id} className={`${styles.row} ${ing.isActive === false ? styles.rowInactive : ''}`}>
+                                        <td className={styles.tdFirst} data-label="Nombre">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {ing.name}
                                                 {ing.isActive === false && <span style={{ fontSize: '0.7rem', background: 'var(--danger)', color: 'white', padding: '0.1rem 0.5rem', borderRadius: '1rem' }}>Inactivo</span>}
                                             </div>
                                             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>{ing.category || 'General'}</div>
                                         </td>
-                                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>${Number(ing.price).toFixed(2)}</td>
-                                        <td style={{ padding: '1rem' }}>
+                                        <td className={styles.td} data-label="Costo">
+                                            <strong>${Number(ing.price).toFixed(2)}</strong>
+                                        </td>
+                                        <td className={styles.td} data-label="Unidad">
                                             <span style={{
                                                 background: 'rgba(59, 130, 246, 0.1)',
                                                 color: 'var(--accent-color)',
@@ -452,15 +441,15 @@ const Ingredients = () => {
                                                 {ing.unit}
                                             </span>
                                         </td>
-                                        <td style={{ padding: '1rem' }}>
+                                        <td className={styles.td} data-label="Rendimiento">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <div style={{ flex: 1, height: '6px', background: 'var(--bg-primary)', borderRadius: '3px', maxWidth: '80px', overflow: 'hidden' }}>
-                                                    <div style={{ width: `${ing.yield}% `, height: '100%', background: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}></div>
+                                                <div style={{ flex: 1, height: '6px', background: 'var(--bg-primary)', borderRadius: '3px', width: '80px', overflow: 'hidden' }}>
+                                                    <div style={{ width: `${ing.yield}%`, height: '100%', background: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}></div>
                                                 </div>
                                                 <span style={{ fontSize: '0.85rem', color: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}>{ing.yield}%</span>
                                             </div>
                                         </td>
-                                        <td style={{ padding: '1rem 1.5rem', borderTopRightRadius: '1rem', borderBottomRightRadius: '1rem', color: 'var(--text-secondary)' }}>
+                                        <td className={styles.tdLast} data-label="Acciones">
                                             <div style={{ display: 'flex', gap: '0.5rem' }}>
                                                 <button
                                                     onClick={() => handleEditIngredient(ing)}
@@ -472,9 +461,7 @@ const Ingredients = () => {
                                                         color: 'var(--accent-color)',
                                                         padding: '0.4rem',
                                                         borderRadius: '0.5rem',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center'
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                                                     }}
                                                 >
                                                     <Pencil size={16} />
@@ -489,9 +476,7 @@ const Ingredients = () => {
                                                         color: 'var(--success)',
                                                         padding: '0.4rem',
                                                         borderRadius: '0.5rem',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center'
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                                                     }}
                                                 >
                                                     <DollarSign size={16} />
@@ -506,9 +491,7 @@ const Ingredients = () => {
                                                         color: ing.isActive !== false ? 'var(--danger)' : 'var(--text-secondary)',
                                                         padding: '0.4rem',
                                                         borderRadius: '0.5rem',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center'
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                                                     }}
                                                 >
                                                     {ing.isActive !== false ? <Ban size={16} /> : <CheckCircle size={16} />}
