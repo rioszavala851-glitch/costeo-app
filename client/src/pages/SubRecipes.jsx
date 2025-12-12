@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, Search, Filter, ChefHat, X, Save, Trash2, ArrowRight, Pencil } from 'lucide-react';
+import styles from './SubRecipes.module.css';
 
 /**
  * Calcula el costo real de un ingrediente basado en su precio, rendimiento y cantidad.
