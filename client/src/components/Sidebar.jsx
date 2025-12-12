@@ -26,7 +26,12 @@ const Sidebar = ({ isOpen, toggleSidebar, isMobile, theme, toggleTheme }) => {
     const [showSubRecipes, setShowSubRecipes] = useState(false);
     const { user, logout } = useAuth();
 
-    // ... useEffect ...
+    useEffect(() => {
+        const savedIng = localStorage.getItem('ingredients');
+        const savedSub = localStorage.getItem('subRecipes');
+        if (savedIng) setIngredients(JSON.parse(savedIng));
+        if (savedSub) setSubRecipes(JSON.parse(savedSub));
+    }, []);
 
     const handleNavClick = () => {
         if (isMobile && isOpen) {
@@ -34,7 +39,11 @@ const Sidebar = ({ isOpen, toggleSidebar, isMobile, theme, toggleTheme }) => {
         }
     };
 
-    // ... handleLogout ...
+    const handleLogout = () => {
+        if (window.confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+            logout();
+        }
+    };
 
     const navItems = [
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
