@@ -96,7 +96,7 @@ function AppContent() {
         <Sidebar
           isOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
-          closeSidebar={closeSidebar}
+          closeSidebar={() => setIsSidebarOpen(false)}
           isMobile={isMobile}
           theme={theme}
           toggleTheme={toggleTheme}
