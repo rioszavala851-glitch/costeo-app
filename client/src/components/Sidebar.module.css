@@ -155,31 +155,37 @@
 
 /* Mobile Override: Always look expanded if open in overlay mode */
 @media (max-width: 1024px) {
-    .sidebar {
-        width: 260px !important;
-    }
 
+    .sidebar,
     .sidebar.collapsed {
-        width: 260px !important;
-        /* Force width even if class is present (though app logic should hide it if closed) */
+        width: 280px !important;
+        min-width: 280px !important;
+        max-width: 80vw;
     }
 
     .collapsed .logoText,
     .collapsed .labelText,
-    .collapsed .toggleBtn {
-        display: flex !important;
+    .logoText,
+    .labelText {
+        display: block !important;
         opacity: 1 !important;
         width: auto !important;
-        margin-left: 0;
+        visibility: visible !important;
     }
 
-    .collapsed .link {
+    .collapsed .toggleBtn,
+    .toggleBtn {
+        display: none !important;
+    }
+
+    .collapsed .link,
+    .link {
         justify-content: flex-start !important;
         padding: 0.75rem 1rem !important;
     }
 
-    /* Hide the internal chevron toggle on mobile since we use overlay click to close */
-    .toggleBtn {
-        display: none !important;
+    .header {
+        justify-content: center !important;
+        padding-top: 1rem;
     }
 }
