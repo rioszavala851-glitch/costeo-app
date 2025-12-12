@@ -61,9 +61,7 @@
     color: var(--text-primary);
 }
 
-.alert {
-    /* Helper to center toggle when collapsed */
-}
+
 
 .collapsed .toggleBtn {
     margin: 0 auto;
