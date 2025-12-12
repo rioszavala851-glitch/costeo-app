@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { Plus, Search, Filter, ChefHat, X, Save, Trash2, ArrowRight, Pencil } from 'lucide-react';
 
 /**
@@ -43,6 +44,8 @@ const SubRecipes = () => {
         const saved = localStorage.getItem('subRecipes');
         return saved ? JSON.parse(saved) : [];
     });
+    const { user } = useAuth();
+    const canEdit = user?.role !== 'viewer';
     const [isAdding, setIsAdding] = useState(false);
 
     // State for creating a new sub-recipe
@@ -190,26 +193,28 @@ const SubRecipes = () => {
                     </div>
                 </div>
 
-                <button
-                    onClick={() => setIsAdding(true)}
-                    className="btn-primary"
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        background: 'var(--accent-color)',
-                        color: 'white',
-                        border: 'none',
-                        padding: '0.75rem 1.5rem',
-                        borderRadius: 'var(--radius)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                    }}
-                >
-                    <Plus size={20} />
-                    Agregar Sub-receta
-                </button>
+                {canEdit && (
+                    <button
+                        onClick={() => setIsAdding(true)}
+                        className="btn-primary"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem',
+                            background: 'var(--accent-color)',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.75rem 1.5rem',
+                            borderRadius: 'var(--radius)',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                        }}
+                    >
+                        <Plus size={20} />
+                        Agregar Sub-receta
+                    </button>
+                )}
             </div>
 
             {/* Formulario Agregar (Hidden by default) */}
@@ -436,13 +441,17 @@ const SubRecipes = () => {
                             Las sub-recetas te ayudan a estandarizar producciones intermedias (salsas, masas). Agrégalas para usarlas despues en tus platillos.
                         </p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-                            <button onClick={() => setIsAdding(true)} style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius)', cursor: 'pointer', fontWeight: 'bold' }}>
-                                Crear mi primera sub-receta
-                            </button>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>o</span>
-                            <button onClick={loadTestData} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.9rem' }}>
-                                🔄 Cargar sub-receta de ejemplo
-                            </button>
+                            {canEdit && (
+                                <>
+                                    <button onClick={() => setIsAdding(true)} style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius)', cursor: 'pointer', fontWeight: 'bold' }}>
+                                        Crear mi primera sub-receta
+                                    </button>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>o</span>
+                                    <button onClick={loadTestData} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.9rem' }}>
+                                        🔄 Cargar sub-receta de ejemplo
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
                 ) : (
@@ -452,7 +461,7 @@ const SubRecipes = () => {
                                 <th style={{ padding: '0 1.5rem' }}>Nombre</th>
                                 <th style={{ padding: '0 1rem' }}>Unidad</th>
                                 <th style={{ padding: '0 1rem' }}>Costo Total</th>
-                                <th style={{ padding: '0 1.5rem' }}>Acciones</th>
+                                {canEdit && <th style={{ padding: '0 1.5rem' }}>Acciones</th>}
                             </tr>
                         </thead>
                         <tbody>
@@ -466,27 +475,29 @@ const SubRecipes = () => {
                                     </td>
                                     <td style={{ padding: '1rem' }}>{sub.unit}</td>
                                     <td style={{ padding: '1rem', fontWeight: 'bold', color: 'var(--success)' }}>${sub.cost.toFixed(2)}</td>
-                                    <td style={{ padding: '1rem 1.5rem', borderTopRightRadius: '1rem', borderBottomRightRadius: '1rem' }}>
-                                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                            <button
-                                                onClick={() => handleEditSubRecipe(sub)}
-                                                title="Editar Sub-receta"
-                                                style={{
-                                                    background: 'rgba(59, 130, 246, 0.1)',
-                                                    border: '1px solid var(--accent-color)',
-                                                    cursor: 'pointer',
-                                                    color: 'var(--accent-color)',
-                                                    padding: '0.4rem',
-                                                    borderRadius: '0.5rem',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                }}
-                                            >
-                                                <Pencil size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
+                                    {canEdit && (
+                                        <td style={{ padding: '1rem 1.5rem', borderTopRightRadius: '1rem', borderBottomRightRadius: '1rem' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                <button
+                                                    onClick={() => handleEditSubRecipe(sub)}
+                                                    title="Editar Sub-receta"
+                                                    style={{
+                                                        background: 'rgba(59, 130, 246, 0.1)',
+                                                        border: '1px solid var(--accent-color)',
+                                                        cursor: 'pointer',
+                                                        color: 'var(--accent-color)',
+                                                        padding: '0.4rem',
+                                                        borderRadius: '0.5rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center'
+                                                    }}
+                                                >
+                                                    <Pencil size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

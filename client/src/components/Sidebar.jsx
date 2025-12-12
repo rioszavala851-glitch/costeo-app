@@ -18,38 +18,29 @@ import {
 import styles from './Sidebar.module.css';
 import { useAuth } from '../contexts/AuthContext';
 
-const Sidebar = ({ isOpen, toggleSidebar, theme, toggleTheme }) => {
+const Sidebar = ({ isOpen, toggleSidebar, isMobile, theme, toggleTheme }) => {
+    // ... existing state ...
     const [ingredients, setIngredients] = useState([]);
     const [subRecipes, setSubRecipes] = useState([]);
     const [showIngredients, setShowIngredients] = useState(false);
     const [showSubRecipes, setShowSubRecipes] = useState(false);
     const { user, logout } = useAuth();
 
-    useEffect(() => {
-        const savedIng = localStorage.getItem('ingredients');
-        const savedSub = localStorage.getItem('subRecipes');
-        if (savedIng) setIngredients(JSON.parse(savedIng));
-        if (savedSub) setSubRecipes(JSON.parse(savedSub));
-    }, []);
+    // ... useEffect ...
 
-    const handleLogout = () => {
-        if (window.confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-            logout();
+    const handleNavClick = () => {
+        if (isMobile && isOpen) {
+            toggleSidebar();
         }
     };
 
-    const navItems = [
-        { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/ingredients', label: 'Ingredientes', icon: Cherry },
-        { path: '/subrecipes', label: 'Sub-recetas', icon: ChefHat },
-        { path: '/recipes', label: 'Recetas', icon: UtensilsCrossed },
-        { path: '/categories', label: 'Categorías', icon: Tag },
-        { path: '/admin', label: 'Administración', icon: ShieldCheck },
-    ];
+    // ... handleLogout ...
+
+    // ... navItems ...
 
     return (
         <div className={`${styles.sidebar} ${!isOpen ? styles.collapsed : ''}`}>
-            {/* Header / Logo */}
+            {/* Header ... */}
             <div className={styles.header}>
                 {isOpen && <h2 className={styles.logoText}>CosteoApp</h2>}
                 <button onClick={toggleSidebar} className={styles.toggleBtn}>
@@ -64,6 +55,7 @@ const Sidebar = ({ isOpen, toggleSidebar, theme, toggleTheme }) => {
                         <NavLink
                             key={item.path}
                             to={item.path}
+                            onClick={handleNavClick}
                             className={({ isActive }) =>
                                 `${styles.link} ${isActive ? styles.active : ''}`
                             }

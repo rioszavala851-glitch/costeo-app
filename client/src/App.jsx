@@ -94,6 +94,7 @@ function AppContent() {
         <Sidebar
           isOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
+          isMobile={isMobile}
           theme={theme}
           toggleTheme={toggleTheme}
         />

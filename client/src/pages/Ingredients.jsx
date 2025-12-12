@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { Plus, FileSpreadsheet, Search, Filter, Download, Save, X, DollarSign, Ban, CheckCircle, Pencil, ChefHat } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import styles from './Ingredients.module.css';
@@ -46,6 +47,8 @@ const recalculateSubRecipeCost = (subRecipe, ingredientsMap) => {
 const Ingredients = () => {
     // State for ingredients
     const [ingredients, setIngredients] = useState([]);
+    const { user } = useAuth();
+    const canEdit = user?.role !== 'viewer';
 
     // Load sub-recipes (keeping localStorage for now as requested/out of scope for this specific file refactor, 
     // but ideally should be API too. For now we focus on ingredients sync).
@@ -270,49 +273,53 @@ const Ingredients = () => {
                         Plantilla
                     </button>
 
-                    {/* Botón Importar Excel */}
-                    <label
-                        className="btn-secondary"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            background: 'var(--success)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderRadius: 'var(--radius)',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem'
-                        }}
-                    >
-                        <FileSpreadsheet size={18} />
-                        Importar Excel
-                        <input type="file" onChange={handleFileUpload} accept=".csv, .xlsx, .xls" style={{ display: 'none' }} />
-                    </label>
+                    {/* Botón Importar Excel - Only if canEdit */}
+                    {canEdit && (
+                        <label
+                            className="btn-secondary"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                background: 'var(--success)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.5rem 1rem',
+                                borderRadius: 'var(--radius)',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            <FileSpreadsheet size={18} />
+                            Importar Excel
+                            <input type="file" onChange={handleFileUpload} accept=".csv, .xlsx, .xls" style={{ display: 'none' }} />
+                        </label>
+                    )}
 
-                    {/* Botón Agregar Manual */}
-                    <button
-                        onClick={() => setIsAdding(true)}
-                        className="btn-primary"
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            background: 'var(--accent-color)',
-                            color: 'white',
-                            border: 'none',
-                            padding: '0.5rem 1rem',
-                            borderRadius: 'var(--radius)',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem'
-                        }}
-                    >
-                        <Plus size={18} />
-                        Agregar Manual
-                    </button>
+                    {/* Botón Agregar Manual - Only if canEdit */}
+                    {canEdit && (
+                        <button
+                            onClick={() => setIsAdding(true)}
+                            className="btn-primary"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                background: 'var(--accent-color)',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.5rem 1rem',
+                                borderRadius: 'var(--radius)',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                fontSize: '0.9rem'
+                            }}
+                        >
+                            <Plus size={18} />
+                            Agregar Manual
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -412,7 +419,7 @@ const Ingredients = () => {
                                     <th className={styles.th}>Costo</th>
                                     <th className={styles.th}>Unidad</th>
                                     <th className={styles.th}>Rendimiento</th>
-                                    <th className={styles.th}>Acciones</th>
+                                    {canEdit && <th className={styles.th}>Acciones</th>}
                                 </tr>
                             </thead>
                             <tbody>
@@ -449,55 +456,57 @@ const Ingredients = () => {
                                                 <span style={{ fontSize: '0.85rem', color: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}>{ing.yield}%</span>
                                             </div>
                                         </td>
-                                        <td className={styles.tdLast} data-label="Acciones">
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <button
-                                                    onClick={() => handleEditIngredient(ing)}
-                                                    title="Editar Detalles"
-                                                    style={{
-                                                        background: 'rgba(59, 130, 246, 0.1)',
-                                                        border: '1px solid var(--accent-color)',
-                                                        cursor: 'pointer',
-                                                        color: 'var(--accent-color)',
-                                                        padding: '0.4rem',
-                                                        borderRadius: '0.5rem',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                    }}
-                                                >
-                                                    <Pencil size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleUpdatePrice(ing.id, ing.price)}
-                                                    title="Modificar Precio"
-                                                    style={{
-                                                        background: 'rgba(16, 185, 129, 0.1)',
-                                                        border: '1px solid var(--success)',
-                                                        cursor: 'pointer',
-                                                        color: 'var(--success)',
-                                                        padding: '0.4rem',
-                                                        borderRadius: '0.5rem',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                    }}
-                                                >
-                                                    <DollarSign size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleToggleActive(ing.id)}
-                                                    title={ing.isActive !== false ? "Inhabilitar" : "Habilitar"}
-                                                    style={{
-                                                        background: ing.isActive !== false ? 'rgba(239, 68, 68, 0.1)' : 'rgba(148, 163, 184, 0.1)',
-                                                        border: ing.isActive !== false ? '1px solid var(--danger)' : '1px solid var(--text-secondary)',
-                                                        cursor: 'pointer',
-                                                        color: ing.isActive !== false ? 'var(--danger)' : 'var(--text-secondary)',
-                                                        padding: '0.4rem',
-                                                        borderRadius: '0.5rem',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                                    }}
-                                                >
-                                                    {ing.isActive !== false ? <Ban size={16} /> : <CheckCircle size={16} />}
-                                                </button>
-                                            </div>
-                                        </td>
+                                        {canEdit && (
+                                            <td className={styles.tdLast} data-label="Acciones">
+                                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                    <button
+                                                        onClick={() => handleEditIngredient(ing)}
+                                                        title="Editar Detalles"
+                                                        style={{
+                                                            background: 'rgba(59, 130, 246, 0.1)',
+                                                            border: '1px solid var(--accent-color)',
+                                                            cursor: 'pointer',
+                                                            color: 'var(--accent-color)',
+                                                            padding: '0.4rem',
+                                                            borderRadius: '0.5rem',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                        }}
+                                                    >
+                                                        <Pencil size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdatePrice(ing.id, ing.price)}
+                                                        title="Modificar Precio"
+                                                        style={{
+                                                            background: 'rgba(16, 185, 129, 0.1)',
+                                                            border: '1px solid var(--success)',
+                                                            cursor: 'pointer',
+                                                            color: 'var(--success)',
+                                                            padding: '0.4rem',
+                                                            borderRadius: '0.5rem',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                        }}
+                                                    >
+                                                        <DollarSign size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleToggleActive(ing.id)}
+                                                        title={ing.isActive !== false ? "Inhabilitar" : "Habilitar"}
+                                                        style={{
+                                                            background: ing.isActive !== false ? 'rgba(239, 68, 68, 0.1)' : 'rgba(148, 163, 184, 0.1)',
+                                                            border: ing.isActive !== false ? '1px solid var(--danger)' : '1px solid var(--text-secondary)',
+                                                            cursor: 'pointer',
+                                                            color: ing.isActive !== false ? 'var(--danger)' : 'var(--text-secondary)',
+                                                            padding: '0.4rem',
+                                                            borderRadius: '0.5rem',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                        }}
+                                                    >
+                                                        {ing.isActive !== false ? <Ban size={16} /> : <CheckCircle size={16} />}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>

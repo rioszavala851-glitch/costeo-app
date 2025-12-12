@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { Plus, Search, Filter, UtensilsCrossed, X, Save, Trash2, ArrowRight, Pencil, ChefHat, DollarSign, Calculator, Eye, ChevronDown, Tag } from 'lucide-react';
 
 /**
@@ -58,6 +59,8 @@ const Recipes = () => {
         const saved = localStorage.getItem('recipes');
         return saved ? JSON.parse(saved) : [];
     });
+    const { user } = useAuth();
+    const canEdit = user?.role !== 'viewer';
     const [isAdding, setIsAdding] = useState(false);
 
     // State for creating a new recipe
@@ -81,14 +84,26 @@ const Recipes = () => {
     const [expandedCategories, setExpandedCategories] = useState({});
 
     // Data sources for selection
+    // Data sources for selection
     const [availableItems, setAvailableItems] = useState([]);
     const [categories, setCategories] = useState([]);
 
     useEffect(() => {
-        const savedCategories = localStorage.getItem('categories');
-        if (savedCategories) {
-            setCategories(JSON.parse(savedCategories));
-        }
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch('/api/categories');
+                if (res.ok) {
+                    const data = await res.json();
+                    setCategories(data.map(cat => ({ ...cat, id: cat._id })));
+                } else {
+                    console.error('Error fetching categories');
+                }
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+
+        fetchCategories();
     }, [isAdding]);
 
     useEffect(() => {
@@ -417,22 +432,24 @@ const Recipes = () => {
                     </div>
                 </div>
 
-                <button
-                    onClick={() => {
-                        setIsAdding(true);
-                        setEditingId(null);
-                        setNewRecipe({ name: '', portions: 1, sellingPrice: 0, category: '', cost: 0, utilityPercentage: 30 });
-                        setSelectedIngredients([]);
-                    }}
-                    className="btn-primary"
-                    style={{
-                        display: 'flex', alignItems: 'center', gap: '0.5rem',
-                        background: 'var(--accent-color)', color: 'white', border: 'none',
-                        padding: '0.75rem 1.5rem', borderRadius: 'var(--radius)', fontWeight: 'bold', cursor: 'pointer'
-                    }}
-                >
-                    <Plus size={20} /> Nueva Receta
-                </button>
+                {canEdit && (
+                    <button
+                        onClick={() => {
+                            setIsAdding(true);
+                            setEditingId(null);
+                            setNewRecipe({ name: '', portions: 1, sellingPrice: 0, category: '', cost: 0, utilityPercentage: 30 });
+                            setSelectedIngredients([]);
+                        }}
+                        className="btn-primary"
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '0.5rem',
+                            background: 'var(--accent-color)', color: 'white', border: 'none',
+                            padding: '0.75rem 1.5rem', borderRadius: 'var(--radius)', fontWeight: 'bold', cursor: 'pointer'
+                        }}
+                    >
+                        <Plus size={20} /> Nueva Receta
+                    </button>
+                )}
             </div>
 
             {isAdding && (
@@ -643,9 +660,11 @@ const Recipes = () => {
                         <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 2rem auto', lineHeight: '1.5' }}>
                             Crea tus platillos finales combinando ingredientes y sub-recetas para saber tu costo real y ganancia.
                         </p>
-                        <button onClick={() => setIsAdding(true)} style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius)', cursor: 'pointer', fontWeight: 'bold' }}>
-                            Crear mi primera receta
-                        </button>
+                        {canEdit && (
+                            <button onClick={() => setIsAdding(true)} style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent-color)', color: 'var(--accent-color)', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius)', cursor: 'pointer', fontWeight: 'bold' }}>
+                                Crear mi primera receta
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div>
@@ -727,7 +746,7 @@ const Recipes = () => {
                                                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                                                                     <button onClick={() => handleOpenChefMode(r)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }} title="Modo Chef (Cocina)"><Eye size={18} /></button>
                                                                     <button onClick={() => handleOpenProduction(r)} style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer' }} title="Calculadora de Producción"><Calculator size={18} /></button>
-                                                                    <button onClick={() => handleEditRecipe(r)} style={{ background: 'none', border: 'none', color: 'var(--accent-color)', cursor: 'pointer' }} title="Editar Receta"><Pencil size={18} /></button>
+                                                                    {canEdit && <button onClick={() => handleEditRecipe(r)} style={{ background: 'none', border: 'none', color: 'var(--accent-color)', cursor: 'pointer' }} title="Editar Receta"><Pencil size={18} /></button>}
                                                                 </div>
                                                             </td>
                                                         </tr>
