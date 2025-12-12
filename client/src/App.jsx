@@ -61,6 +61,8 @@ function AppContent() {
     document.body.setAttribute('data-theme', newTheme);
   };
 
+  const closeSidebar = () => setIsSidebarOpen(false);
+
   // If not authenticated, show only login route
   if (!isAuthenticated) {
     return (
@@ -76,7 +78,7 @@ function AppContent() {
       {/* Mobile Overlay for Sidebar */}
       {isMobile && isSidebarOpen && (
         <div
-          onClick={() => setIsSidebarOpen(false)}
+          onClick={closeSidebar}
           style={{
             position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40
           }}
@@ -94,6 +96,7 @@ function AppContent() {
         <Sidebar
           isOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
+          closeSidebar={closeSidebar}
           isMobile={isMobile}
           theme={theme}
           toggleTheme={toggleTheme}

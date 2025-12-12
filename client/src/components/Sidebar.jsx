@@ -18,7 +18,7 @@ import {
 import styles from './Sidebar.module.css';
 import { useAuth } from '../contexts/AuthContext';
 
-const Sidebar = ({ isOpen, toggleSidebar, isMobile, theme, toggleTheme }) => {
+const Sidebar = ({ isOpen, toggleSidebar, closeSidebar, isMobile, theme, toggleTheme }) => {
     // ... existing state ...
     const [ingredients, setIngredients] = useState([]);
     const [subRecipes, setSubRecipes] = useState([]);
@@ -35,7 +35,7 @@ const Sidebar = ({ isOpen, toggleSidebar, isMobile, theme, toggleTheme }) => {
 
     const handleNavClick = () => {
         if (isMobile && isOpen) {
-            toggleSidebar();
+            closeSidebar ? closeSidebar() : toggleSidebar();
         }
     };
 

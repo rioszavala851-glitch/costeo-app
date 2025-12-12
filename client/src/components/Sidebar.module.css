@@ -7,7 +7,6 @@
     flex-direction: column;
     padding: 1.5rem;
     box-sizing: border-box;
-    position: fixed;
     transition: width 0.3s ease;
     overflow-x: hidden;
 }
