@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const { auth, authorizeRole } = require('../middleware/auth');
+
+// Protect all routes: Only Admins can manage users
+router.use(auth, authorizeRole(['admin']));
 
 // @route   GET /api/users
 // @desc    Get all users

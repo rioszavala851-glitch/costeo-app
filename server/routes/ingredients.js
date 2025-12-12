@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Ingredient = require('../models/Ingredient');
+const { auth, authorizeRole } = require('../middleware/auth');
 
 // @route   GET /api/ingredients
-// @desc    Get all ingredients
-router.get('/', async (req, res) => {
+// @desc    Get all ingredients (Authenticated users)
+router.get('/', auth, async (req, res) => {
     try {
         const ingredients = await Ingredient.find();
         res.json(ingredients);
@@ -14,8 +15,8 @@ router.get('/', async (req, res) => {
 });
 
 // @route   POST /api/ingredients
-// @desc    Create an ingredient
-router.post('/', async (req, res) => {
+// @desc    Create an ingredient (Admin & Chef)
+router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
     // Map frontend 'price' to backend 'cost' if necessary
     const costValue = req.body.cost !== undefined ? req.body.cost : req.body.price;
 
@@ -38,8 +39,8 @@ router.post('/', async (req, res) => {
 });
 
 // @route   PUT /api/ingredients/:id
-// @desc    Update an ingredient
-router.put('/:id', async (req, res) => {
+// @desc    Update an ingredient (Admin & Chef)
+router.put('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
     try {
         const { name, unit, cost, price, yield: yieldVal, category, isActive } = req.body;
 
@@ -70,8 +71,8 @@ router.put('/:id', async (req, res) => {
 });
 
 // @route   DELETE /api/ingredients/:id
-// @desc    Delete an ingredient
-router.delete('/:id', async (req, res) => {
+// @desc    Delete an ingredient (Admin & Chef)
+router.delete('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
     try {
         const ingredient = await Ingredient.findById(req.params.id);
         if (!ingredient) {

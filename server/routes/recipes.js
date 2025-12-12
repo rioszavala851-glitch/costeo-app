@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const Recipe = require('../models/Recipe');
+const { auth, authorizeRole } = require('../middleware/auth');
 
 // @route   GET /api/recipes
-router.get('/', async (req, res) => {
+// @desc    Get all recipes (Authenticated users)
+router.get('/', auth, async (req, res) => {
     try {
         const recipes = await Recipe.find().populate('items.item');
         res.json(recipes);
@@ -13,7 +15,8 @@ router.get('/', async (req, res) => {
 });
 
 // @route   POST /api/recipes
-router.post('/', async (req, res) => {
+// @desc    Create a recipe (Admin & Chef)
+router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
     const recipe = new Recipe(req.body);
     try {
         const newRecipe = await recipe.save();

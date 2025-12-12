@@ -3,6 +3,7 @@ import UserManagement from '../components/admin/UserManagement';
 import PermissionsTab from '../components/admin/PermissionsTab';
 import RecipesCloud from '../components/admin/RecipesCloud';
 import { Users, Lock, Cloud } from 'lucide-react';
+import styles from './Admin.module.css';
 
 const Admin = () => {
     const [activeTab, setActiveTab] = useState('users');
@@ -14,28 +15,16 @@ const Admin = () => {
     ];
 
     return (
-        <div>
-            <h1 style={{ marginBottom: '2rem' }}>Área Administrativa</h1>
+        <div className={styles.container}>
+            <h1 className={styles.title}>Área Administrativa</h1>
 
             {/* Tabs Navigation */}
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+            <div className={styles.tabs}>
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            padding: '0.75rem 1.5rem',
-                            borderRadius: 'var(--radius)',
-                            border: 'none',
-                            background: activeTab === tab.id ? 'var(--accent-color)' : 'var(--bg-card)',
-                            color: activeTab === tab.id ? 'white' : 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            fontSize: '1rem',
-                            transition: 'all 0.2s ease'
-                        }}
+                        className={`${styles.tabBtn} ${activeTab === tab.id ? styles.activeTab : ''}`}
                     >
                         <tab.icon size={18} />
                         {tab.label}
@@ -44,7 +33,7 @@ const Admin = () => {
             </div>
 
             {/* Content Area */}
-            <div>
+            <div className="animate-fade-in">
                 {activeTab === 'users' && <UserManagement />}
                 {activeTab === 'permissions' && <PermissionsTab />}
                 {activeTab === 'cloud' && <RecipesCloud />}

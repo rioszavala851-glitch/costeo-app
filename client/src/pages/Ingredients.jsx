@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, FileSpreadsheet, Search, Filter, Download, Save, X, DollarSign, Ban, CheckCircle, Pencil, ChefHat } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import axios from 'axios';
 import styles from './Ingredients.module.css';
 
 /**
@@ -64,9 +65,8 @@ const Ingredients = () => {
     // Fetch ingredients from API
     const fetchIngredients = async () => {
         try {
-            const res = await fetch('/api/ingredients');
-            if (!res.ok) throw new Error('Error al cargar ingredientes');
-            const data = await res.json();
+            const res = await axios.get('/api/ingredients');
+            const data = res.data;
 
             // Map backend fields to frontend state
             const mapped = data.map(ing => ({
@@ -76,7 +76,7 @@ const Ingredients = () => {
             }));
             setIngredients(mapped);
         } catch (error) {
-            console.error(error);
+            console.error('Error al cargar ingredientes:', error);
         }
     };
 
@@ -102,21 +102,11 @@ const Ingredients = () => {
         try {
             if (editingId) {
                 // UPDATE
-                const res = await fetch(`/api/ingredients/${editingId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) throw new Error('Error al actualizar');
+                await axios.put(`/api/ingredients/${editingId}`, payload);
                 alert("Ingrediente actualizado correctamente");
             } else {
                 // CREATE
-                const res = await fetch('/api/ingredients', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!res.ok) throw new Error('Error al crear');
+                await axios.post('/api/ingredients', payload);
                 alert("Ingrediente agregado correctamente");
             }
             // Refresh list
@@ -147,18 +137,11 @@ const Ingredients = () => {
         const newPrice = prompt("Ingrese el nuevo costo del ingrediente:", currentPrice);
         if (newPrice !== null && !isNaN(newPrice) && newPrice.trim() !== "") {
             try {
-                const res = await fetch(`/api/ingredients/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cost: parseFloat(newPrice) })
-                });
-                if (res.ok) {
-                    fetchIngredients();
-                } else {
-                    alert("Error al actualizar precio");
-                }
+                await axios.put(`/api/ingredients/${id}`, { cost: parseFloat(newPrice) });
+                fetchIngredients();
             } catch (error) {
                 console.error(error);
+                alert("Error al actualizar precio");
             }
         }
     };
@@ -167,16 +150,11 @@ const Ingredients = () => {
         if (!window.confirm("¿Seguro que deseas eliminar este ingrediente?")) return;
 
         try {
-            const res = await fetch(`/api/ingredients/${id}`, {
-                method: 'DELETE'
-            });
-            if (res.ok) {
-                fetchIngredients();
-            } else {
-                alert("Error al eliminar");
-            }
+            await axios.delete(`/api/ingredients/${id}`);
+            fetchIngredients();
         } catch (error) {
             console.error(error);
+            alert("Error al eliminar");
         }
     };
 
@@ -221,11 +199,7 @@ const Ingredients = () => {
                     };
 
                     try {
-                        await fetch('/api/ingredients', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
+                        await axios.post('/api/ingredients', payload);
                         count++;
                     } catch (err) {
                         console.error("Error saving row:", row, err);

@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const SubRecipe = require('../models/SubRecipe');
+const { auth, authorizeRole } = require('../middleware/auth');
 
 // @route   GET /api/subrecipes
-router.get('/', async (req, res) => {
+// @desc    Get all subrecipes (Authenticated users)
+router.get('/', auth, async (req, res) => {
     try {
         const subrecipes = await SubRecipe.find().populate('items.item');
         res.json(subrecipes);
@@ -13,7 +15,8 @@ router.get('/', async (req, res) => {
 });
 
 // @route   POST /api/subrecipes
-router.post('/', async (req, res) => {
+// @desc    Create a subrecipe (Admin & Chef)
+router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
     const subRecipe = new SubRecipe(req.body);
     try {
         const newSubRecipe = await subRecipe.save();

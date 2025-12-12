@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Plus, Tag, Trash2, X, Save, Pencil } from 'lucide-react';
 import styles from './Categories.module.css';
 
@@ -10,8 +11,8 @@ const Categories = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await fetch('/api/categories');
-            const data = await res.json();
+            const res = await axios.get('/api/categories');
+            const data = res.data;
             setCategories(data.map(cat => ({ ...cat, id: cat._id })));
         } catch (error) {
             console.error('Error loading categories:', error);
@@ -26,17 +27,9 @@ const Categories = () => {
         e.preventDefault();
         try {
             if (editingId) {
-                await fetch(`/api/categories/${editingId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newCategory)
-                });
+                await axios.put(`/api/categories/${editingId}`, newCategory);
             } else {
-                await fetch('/api/categories', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newCategory)
-                });
+                await axios.post('/api/categories', newCategory);
             }
             fetchCategories();
             setIsAdding(false);
@@ -56,7 +49,7 @@ const Categories = () => {
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar esta categoría?')) {
             try {
-                await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+                await axios.delete(`/api/categories/${id}`);
                 fetchCategories();
             } catch (error) {
                 console.error('Error deleting category:', error);
