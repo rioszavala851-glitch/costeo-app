@@ -1,90 +1,96 @@
-# CosteoApp - Manual de Inicio
+# CosteoApp - Sistema de Costeo de Recetas
 
-Bienvenido al proyecto **CosteoApp**. Esta es una aplicación web para el costeo de platillos, gestión de recetas e inventario.
+Aplicación web moderna para la gestión de recetas, ingredientes, sub-recetas y cálculo de costos para restaurantes y negocios gastronómicos.
 
-El proyecto está dividido en dos partes principales:
-- **Client (Frontend)**: Realizado con React + Vite.
-- **Server (Backend)**: Realizado con Node.js + Express + MongoDB.
+## 🚀 Características
 
----
+- **Dashboard Interactivo**: Vista general de recetas y costos.
+- **Gestión de Ingredientes**: CRUD completo con precios y mermas.
+- **Recetas y Sub-recetas**: Sistema anidado para cálculos precisos (Ingrediente -> Sub-receta -> Receta).
+- **Cálculo de Costos**: Costo real vs costo ideal, margenes de ganancia y sugerencia de precios.
+- **Autenticación Segura**: Sistema de login con JWT y contraseñas encriptadas.
+- **Roles de Usuario**: Admin, Chef y Visualizador.
+- **Diseño Responsivo**: Interfaz moderna adaptable a móviles y escritorio (Glassmorphism).
 
-## 🚀 Requisitos Previos
+## 🛠️ Tecnologías
 
-1.  **Node.js**: Asegúrate de tener instalado Node.js (versión 14 o superior).
-2.  **MongoDB Atlas**: Necesitas una cuenta en [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) y un clúster creado para obtener tu cadena de conexión (`MONGO_URI`).
+### Frontend (Client)
+- React + Vite
+- React Router DOM
+- CSS Modules (Diseño personalizado)
+- Lucide React (Iconos)
+- Axios
 
----
+### Backend (Server)
+- Node.js + Express
+- MongoDB (Mongoose)
+- JWT (JSON Web Tokens)
+- Bcryptjs
 
-## 🛠️ Configuración Inicial
+## 📦 Instalación
 
-Sigue estos pasos la primera vez que descargues o clones el proyecto.
+1. **Clonar el repositorio**
+   ```bash
+   git clone <tu-repo-url>
+   cd Costeo-app
+   ```
 
-### 1. Configuración del Servidor (Backend)
+2. **Instalar dependencias del Servidor**
+   ```bash
+   cd server
+   npm install
+   ```
 
-1.  Ve a la carpeta `server`:
-    ```bash
-    cd server
-    ```
-2.  Instala las dependencias:
-    ```bash
-    npm install
-    ```
-3.  Configura las variables de entorno:
-    - Abre el archivo `.env` ubicado en `server/.env`.
-    - Busca la línea que dice `MONGO_URI`.
-    - **IMPORTANTE**: Reemplaza el texto de ejemplo con tu cadena de conexión real de MongoDB Atlas.
-    
-    Ejemplo:
-    ```env
-    PORT=5000
-    MONGO_URI=mongodb+srv://tu_usuario:tu_contraseña@cluster0.abcde.mongodb.net/costeo-app?retryWrites=true&w=majority
-    ```
+3. **Instalar dependencias del Cliente**
+   ```bash
+   cd ../client
+   npm install
+   ```
 
-### 2. Configuración del Cliente (Frontend)
+## ⚙️ Configuración
 
-1.  Ve a la carpeta `client`:
-    ```bash
-    cd client
-    ```
-2.  Instala las dependencias:
-    ```bash
-    npm install
-    ```
+1. **Variables de Entorno (Backend)**
+   Crea un archivo `.env` en la carpeta `server/` basándote en `.env.example`:
+   ```bash
+   MONGO_URI=tu_connection_string_de_mongodb
+   PORT=5000
+   JWT_SECRET=tu_secreto_super_seguro
+   ```
 
----
+## 💾 Base de Datos (Seed)
 
-## ▶️ Cómo Iniciar la Aplicación
+Para poblar la base de datos con usuarios iniciales (necesario para el primer login):
 
-Para trabajar, necesitas tener **dos terminales** abiertas: una para el servidor y otra para el cliente.
+```bash
+cd server
+node seedUsers.js
+```
 
-### Terminal 1: Iniciar Servidor (Backend)
+## ▶️ Ejecución
+
+Necesitas dos terminales abiertas:
+
+**Terminal 1 (Backend):**
 ```bash
 cd server
 npm run dev
 ```
-*Deberías ver un mensaje como: `Server running on port 5000` y luego `MongoDB Connected`.*
 
-### Terminal 2: Iniciar Cliente (Frontend)
+**Terminal 2 (Frontend):**
 ```bash
 cd client
 npm run dev
 ```
-*Verás un mensaje indicando que la app está corriendo en `http://localhost:5173/`.*
+
+## 🔐 Credenciales de Prueba
+
+El sistema viene pre-cargado con los siguientes usuarios (después de ejecutar `seedUsers.js`):
+
+| Rol | Email | Contraseña |
+|-----|-------|------------|
+| **Admin** | admin@costeo.com | admin |
+| **Auxiliar** | aux@costeo.com | aux |
+| **Chef** | chef@costeo.com | chef |
 
 ---
-
-## 📋 Resumen de Comandos
-
-| Acción | Directorio | Comando |
-| :--- | :--- | :--- |
-| Instalar dependencias backend | `server/` | `npm install` |
-| Instalar dependencias frontend | `client/` | `npm install` |
-| **Iniciar Backend (Modo Desarrollo)** | `server/` | `npm run dev` |
-| **Iniciar Frontend** | `client/` | `npm run dev` |
-
----
-
-## ⚠️ Solución de Problemas Comunes
-
--   **Error de conexión a MongoDB**: Verifica que tu IP esté permitida en el panel de "Network Access" de MongoDB Atlas.
--   **Puerto ocupado**: Si el puerto 5000 está ocupado, cambia el puerto en el archivo `.env` del servidor.
+Desarrollado con ❤️ para optimizar costos gastronómicos.

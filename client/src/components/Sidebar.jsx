@@ -11,15 +11,19 @@ import {
     Sun,
     Moon,
     ChevronDown,
-    Tag
+    Tag,
+    LogOut,
+    User
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
+import { useAuth } from '../contexts/AuthContext';
 
 const Sidebar = ({ isOpen, toggleSidebar, theme, toggleTheme }) => {
     const [ingredients, setIngredients] = useState([]);
     const [subRecipes, setSubRecipes] = useState([]);
     const [showIngredients, setShowIngredients] = useState(false);
     const [showSubRecipes, setShowSubRecipes] = useState(false);
+    const { user, logout } = useAuth();
 
     useEffect(() => {
         const savedIng = localStorage.getItem('ingredients');
@@ -27,6 +31,12 @@ const Sidebar = ({ isOpen, toggleSidebar, theme, toggleTheme }) => {
         if (savedIng) setIngredients(JSON.parse(savedIng));
         if (savedSub) setSubRecipes(JSON.parse(savedSub));
     }, []);
+
+    const handleLogout = () => {
+        if (window.confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+            logout();
+        }
+    };
 
     const navItems = [
         { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -123,11 +133,28 @@ const Sidebar = ({ isOpen, toggleSidebar, theme, toggleTheme }) => {
 
             {/* Footer / Theme Toggle */}
             <div className={styles.footer} style={{ marginTop: 'auto' }}>
+                {isOpen && user && (
+                    <div className={styles.userInfo}>
+                        <div className={styles.userAvatar}>
+                            <User size={18} />
+                        </div>
+                        <div className={styles.userDetails}>
+                            <div className={styles.userName}>{user.name}</div>
+                            <div className={styles.userRole}>{user.role}</div>
+                        </div>
+                    </div>
+                )}
+
                 <button onClick={toggleTheme} className={styles.themeBtn}>
                     {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                     <span className={styles.labelText}>
                         {theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}
                     </span>
+                </button>
+
+                <button onClick={handleLogout} className={styles.logoutBtn} title={!isOpen ? 'Cerrar Sesión' : ''}>
+                    <LogOut size={20} />
+                    <span className={styles.labelText}>Cerrar Sesión</span>
                 </button>
             </div>
         </div>

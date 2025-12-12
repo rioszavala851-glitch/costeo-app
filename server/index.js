@@ -16,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/ingredients', require('./routes/ingredients'));
 app.use('/api/subrecipes', require('./routes/subrecipes'));
 app.use('/api/recipes', require('./routes/recipes'));

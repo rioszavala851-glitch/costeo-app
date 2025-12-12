@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
+import Login from './pages/Login';
 import './index.css';
 
 import Ingredients from './pages/Ingredients';
@@ -13,10 +16,11 @@ import SubRecipes from './pages/SubRecipes';
 import Recipes from './pages/Recipes';
 import Categories from './pages/Categories';
 
-function App() {
+function AppContent() {
   const [isMobile, setIsMobile] = useState(window.matchMedia('(max-width: 1024px)').matches);
   const [isSidebarOpen, setIsSidebarOpen] = useState(!window.matchMedia('(max-width: 1024px)').matches);
   const [theme, setTheme] = useState('dark');
+  const { isAuthenticated } = useAuth();
 
   // Handle Window Resize via MediaQuery
   useEffect(() => {
@@ -57,70 +61,89 @@ function App() {
     document.body.setAttribute('data-theme', newTheme);
   };
 
+  // If not authenticated, show only login route
+  if (!isAuthenticated) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      {/* Mobile Overlay for Sidebar */}
+      {isMobile && isSidebarOpen && (
+        <div
+          onClick={() => setIsSidebarOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40
+          }}
+        />
+      )}
+
+      <div style={{
+        position: isMobile ? 'fixed' : 'sticky',
+        top: 0,
+        height: '100vh',
+        zIndex: 50,
+        transform: isMobile && !isSidebarOpen ? 'translateX(-100%)' : 'none',
+        transition: 'transform 0.3s ease'
+      }}>
+        <Sidebar
+          isOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+      </div>
+
+      <main
+        style={{
+          marginLeft: isMobile ? 0 : (isSidebarOpen ? '260px' : '80px'),
+          padding: '1.5rem',
+          width: '100%',
+          transition: 'margin-left 0.3s ease',
+          flex: 1
+        }}
+      >
+        {/* Mobile Header with Hamburger */}
+        {isMobile && (
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: '1rem' }}>
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              style={{ background: 'none', border: 'none', color: 'var(--text-primary)', padding: 0 }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+            <h3 style={{ margin: 0 }}>CosteoApp</h3>
+          </div>
+        )}
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/ingredients" element={<Ingredients />} />
+          <Route path="/subrecipes" element={<SubRecipes />} />
+          <Route path="/recipes" element={<Recipes />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
+
+function App() {
   return (
     <Router>
-      <div style={{ display: 'flex', minHeight: '100vh' }}>
-        {/* Mobile Overlay for Sidebar */}
-        {isMobile && isSidebarOpen && (
-          <div
-            onClick={() => setIsSidebarOpen(false)}
-            style={{
-              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 40
-            }}
-          />
-        )}
-
-        <div style={{
-          position: isMobile ? 'fixed' : 'sticky',
-          top: 0,
-          height: '100vh',
-          zIndex: 50,
-          transform: isMobile && !isSidebarOpen ? 'translateX(-100%)' : 'none',
-          transition: 'transform 0.3s ease'
-        }}>
-          <Sidebar
-            isOpen={isSidebarOpen}
-            toggleSidebar={toggleSidebar}
-            theme={theme}
-            toggleTheme={toggleTheme}
-          />
-        </div>
-
-        <main
-          style={{
-            marginLeft: isMobile ? 0 : (isSidebarOpen ? '260px' : '80px'),
-            padding: '1.5rem',
-            width: '100%',
-            transition: 'margin-left 0.3s ease',
-            flex: 1
-          }}
-        >
-          {/* Mobile Header with Hamburger */}
-          {isMobile && (
-            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: '1rem' }}>
-              <button
-                onClick={() => setIsSidebarOpen(true)}
-                style={{ background: 'none', border: 'none', color: 'var(--text-primary)', padding: 0 }}
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="3" y1="12" x2="21" y2="12"></line>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-              </button>
-              <h3 style={{ margin: 0 }}>CosteoApp</h3>
-            </div>
-          )}
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/ingredients" element={<Ingredients />} />
-            <Route path="/subrecipes" element={<SubRecipes />} />
-            <Route path="/recipes" element={<Recipes />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/admin" element={<Admin />} />
-          </Routes>
-        </main>
-      </div>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }
