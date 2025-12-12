@@ -36,7 +36,15 @@ const Sidebar = ({ isOpen, toggleSidebar, isMobile, theme, toggleTheme }) => {
 
     // ... handleLogout ...
 
-    // ... navItems ...
+    const navItems = [
+        { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+        { path: '/ingredients', label: 'Ingredientes', icon: Cherry },
+        { path: '/subrecipes', label: 'Sub-recetas', icon: ChefHat },
+        { path: '/recipes', label: 'Recetas', icon: UtensilsCrossed },
+        { path: '/categories', label: 'Categorías', icon: Tag },
+        // Only show Admin tab if user role is 'admin'
+        ...(user?.role === 'admin' ? [{ path: '/admin', label: 'Administración', icon: ShieldCheck }] : []),
+    ];
 
     return (
         <div className={`${styles.sidebar} ${!isOpen ? styles.collapsed : ''}`}>
