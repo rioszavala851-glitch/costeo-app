@@ -1,8 +1,4 @@
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
+/* Estilos base (idénticos a Ingredients para consistencia) */
 .header {
     display: flex;
     justify-content: space-between;
@@ -18,16 +14,6 @@
     gap: 1rem;
 }
 
-.iconBox {
-    background: var(--accent-color);
-    padding: 0.75rem;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
 .title {
     margin: 0;
     font-size: 1.8rem;
@@ -40,16 +26,24 @@
     font-size: 0.9rem;
 }
 
+.iconBox {
+    background: var(--accent-color);
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
 .actions {
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
 }
 
-/* Botones */
 .btnPrimary,
-.btnSecondary,
-.btnDanger {
+.btnSecondary {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -80,12 +74,6 @@
 
 .btnSecondary:hover {
     background: var(--bg-hover);
-}
-
-.btnDanger {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
-    border: 1px solid var(--danger);
 }
 
 /* Tarjetas y Formularios */
@@ -132,46 +120,11 @@
     border-color: var(--accent-color);
 }
 
-/* Toolbar de búsqueda */
-.toolbar {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-}
-
-.searchContainer {
-    position: relative;
-    flex: 1;
-    min-width: 280px;
-}
-
-.searchIcon {
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-secondary);
-}
-
-.searchInput {
-    width: 100%;
-    padding: 0.75rem 0.75rem 0.75rem 3rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--glass-border);
-    background: var(--bg-primary);
-    color: var(--text-primary);
-    outline: none;
-}
-
 /* Tabla Responsiva */
 .tableContainer {
     width: 100%;
     overflow-x: auto;
-    /* Permite scroll horizontal en móviles */
-    background: var(--bg-secondary);
     border-radius: var(--radius);
-    border: 1px solid var(--glass-border);
 }
 
 .table {
@@ -179,7 +132,7 @@
     border-collapse: separate;
     border-spacing: 0;
     min-width: 800px;
-    /* Fuerza el scroll si es menor a esto */
+    /* Fuerza scroll si es pequeño */
 }
 
 .th {
@@ -200,7 +153,6 @@
 .actionsCell {
     display: flex;
     gap: 0.5rem;
-    justify-content: flex-end;
 }
 
 .actionBtn {
@@ -213,11 +165,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
-}
-
-.actionBtn:hover {
-    background: rgba(59, 130, 246, 0.2);
 }
 
 .deleteBtn {
@@ -225,11 +172,19 @@
     color: var(--danger);
 }
 
-.deleteBtn:hover {
-    background: rgba(239, 68, 68, 0.2);
+/* Ingredient Selector Specific Styles */
+.ingredientRow {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    background: var(--bg-primary);
+    padding: 0.5rem;
+    border-radius: var(--radius);
 }
 
-/* Media Queries para Móviles */
+/* Media Queries */
 @media (max-width: 768px) {
     .header {
         flex-direction: column;
@@ -247,12 +202,11 @@
         justify-content: center;
     }
 
-    .formGrid {
+    .ingredientRow {
         grid-template-columns: 1fr;
-        /* Formulario en 1 columna */
-    }
-
-    .toolbar {
-        flex-direction: column;
+        /* Ingredientes en lista vertical en movil */
+        gap: 0.5rem;
+        border: 1px solid var(--glass-border);
+        padding: 1rem;
     }
 }
