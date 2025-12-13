@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
-import { User, Trash2, Plus, Pencil, Save, X } from 'lucide-react';
+import { User, Trash2, Plus, Pencil, Save, X, Key } from 'lucide-react';
 import styles from '../../pages/Admin.module.css';
 
 const UserManagement = () => {
@@ -9,6 +9,12 @@ const UserManagement = () => {
     const [userData, setUserData] = useState({ name: '', email: '', password: '', role: 'viewer' });
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Password change modal state
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [selectedUserForPassword, setSelectedUserForPassword] = useState(null);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
     useEffect(() => {
         fetchUsers();
@@ -77,6 +83,40 @@ const UserManagement = () => {
         setIsAdding(false);
         setEditingId(null);
         setUserData({ name: '', email: '', password: '', role: 'viewer' });
+    };
+
+    // Password change handlers
+    const handleOpenPasswordModal = (user) => {
+        setSelectedUserForPassword(user);
+        setNewPassword('');
+        setConfirmPassword('');
+        setShowPasswordModal(true);
+    };
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+
+        if (newPassword !== confirmPassword) {
+            alert('Las contraseñas no coinciden');
+            return;
+        }
+
+        if (newPassword.length < 4) {
+            alert('La contraseña debe tener al menos 4 caracteres');
+            return;
+        }
+
+        try {
+            await api.put(`/users/${selectedUserForPassword._id}/password`, { newPassword });
+            alert('Contraseña cambiada exitosamente');
+            setShowPasswordModal(false);
+            setSelectedUserForPassword(null);
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (error) {
+            console.error('Error changing password:', error);
+            alert('Error al cambiar contraseña: ' + (error.response?.data?.message || 'Error desconocido'));
+        }
     };
 
     const roleLabels = {
@@ -177,6 +217,9 @@ const UserManagement = () => {
                                 <span className={`${styles.roleBadge} ${roleStyles[user.role] || styles.roleUser}`}>
                                     {roleLabels[user.role] || user.role}
                                 </span>
+                                <button onClick={() => handleOpenPasswordModal(user)} className={styles.deleteBtn} style={{ color: 'var(--warning)' }} title="Cambiar Contraseña">
+                                    <Key size={18} />
+                                </button>
                                 <button onClick={() => handleEdit(user)} className={styles.deleteBtn} style={{ color: 'var(--accent-color)' }} title="Editar">
                                     <Pencil size={18} />
                                 </button>
@@ -187,6 +230,95 @@ const UserManagement = () => {
                         </div>
                     ))}
                     {users.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>No hay usuarios registrados.</p>}
+                </div>
+            )}
+
+            {/* Password Change Modal */}
+            {showPasswordModal && selectedUserForPassword && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.8)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000,
+                    padding: '1rem'
+                }}>
+                    <div style={{
+                        background: 'var(--bg-card)',
+                        borderRadius: 'var(--radius)',
+                        padding: '2rem',
+                        maxWidth: '400px',
+                        width: '100%',
+                        border: '1px solid var(--accent-color)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-color)' }}>
+                                <Key size={24} /> Cambiar Contraseña
+                            </h3>
+                            <button
+                                onClick={() => setShowPasswordModal(false)}
+                                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
+                            Cambiar contraseña para: <strong style={{ color: 'var(--text-primary)' }}>{selectedUserForPassword.name}</strong>
+                        </p>
+
+                        <form onSubmit={handleChangePassword}>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                    Nueva Contraseña
+                                </label>
+                                <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    required
+                                    minLength={4}
+                                    className={styles.input}
+                                    placeholder="Mínimo 4 caracteres"
+                                />
+                            </div>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                    Confirmar Contraseña
+                                </label>
+                                <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={e => setConfirmPassword(e.target.value)}
+                                    required
+                                    minLength={4}
+                                    className={styles.input}
+                                    placeholder="Repetir contraseña"
+                                />
+                            </div>
+                            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPasswordModal(false)}
+                                    className={styles.cancelBtn}
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    className={styles.saveBtn}
+                                >
+                                    <Key size={16} style={{ marginRight: '0.5rem' }} />
+                                    Cambiar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>

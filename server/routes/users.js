@@ -78,4 +78,30 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+// @route   PUT /api/users/:id/password
+// @desc    Change user password (Admin only)
+router.put('/:id/password', async (req, res) => {
+    try {
+        const { newPassword } = req.body;
+
+        if (!newPassword || newPassword.length < 4) {
+            return res.status(400).json({ message: 'La contraseña debe tener al menos 4 caracteres' });
+        }
+
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        // Set new password (will be hashed by pre-save hook)
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ message: 'Contraseña actualizada exitosamente' });
+    } catch (err) {
+        console.error('Error changing password:', err);
+        res.status(500).json({ message: 'Error al cambiar contraseña' });
+    }
+});
+
 module.exports = router;
