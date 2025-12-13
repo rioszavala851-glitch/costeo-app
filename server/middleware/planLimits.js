@@ -56,10 +56,11 @@ const getPlanLimits = (plan) => {
 const checkRecipeLimit = async (req, res, next) => {
     try {
         const user = req.user;
-        const planLimits = getPlanLimits(user.plan || 'free');
+        const userPlan = user.planType || user.plan || 'free';
+        const planLimits = getPlanLimits(userPlan);
 
         // Premium users have no limit
-        if (user.plan === 'premium') {
+        if (userPlan === 'premium') {
             return next();
         }
 
@@ -141,7 +142,7 @@ const validateSession = async (req, res, next) => {
 };
 
 /**
- * Get plan status for user - counts recipes PER USER
+ * Get plan status for user - uses cached currentRecipeCount when available
  */
 const getPlanStatus = async (userId) => {
     const Recipe = require('../models/Recipe');
@@ -150,14 +151,25 @@ const getPlanStatus = async (userId) => {
     const user = await User.findById(userId);
     if (!user) return null;
 
-    const planLimits = getPlanLimits(user.plan || 'free');
+    const userPlan = user.planType || 'free';
+    const planLimits = getPlanLimits(userPlan);
 
-    // Count recipes created BY THIS USER specifically
-    const recipeCount = await Recipe.countDocuments({ createdBy: userId });
+    // Use cached count or fetch from DB
+    let recipeCount = user.currentRecipeCount || 0;
+
+    // Verify and sync count if needed
+    const actualCount = await Recipe.countDocuments({ createdBy: userId });
+    if (actualCount !== recipeCount) {
+        // Sync the cached count
+        await User.findByIdAndUpdate(userId, { currentRecipeCount: actualCount });
+        recipeCount = actualCount;
+    }
 
     return {
-        plan: user.plan || 'free',
-        isPremium: user.plan === 'premium',
+        planType: userPlan,
+        plan: userPlan, // Alias for backwards compatibility
+        isPremium: userPlan === 'premium',
+        currentRecipeCount: recipeCount,
         limits: {
             recipes: {
                 max: planLimits.maxRecipes,

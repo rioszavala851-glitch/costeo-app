@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Recipe = require('../models/Recipe');
+const User = require('../models/User');
 const { auth, authorizeRole } = require('../middleware/auth');
 const { checkRecipeLimit, PLAN_LIMITS, getUserRecipeCount } = require('../middleware/planLimits');
 
@@ -44,6 +45,11 @@ router.post('/', auth, authorizeRole(['admin', 'chef']), checkRecipeLimit, async
 
         const recipe = new Recipe(recipeData);
         const newRecipe = await recipe.save();
+
+        // Update user's currentRecipeCount
+        await User.findByIdAndUpdate(req.user.id, {
+            $inc: { currentRecipeCount: 1 }
+        });
 
         // Populate the creator info
         await newRecipe.populate('createdBy', 'name email');
@@ -103,7 +109,18 @@ router.delete('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) =
             return res.status(403).json({ message: 'No tienes permiso para eliminar esta receta' });
         }
 
+        // Get the owner ID before deleting
+        const ownerId = recipe.createdBy;
+
         await Recipe.findByIdAndDelete(req.params.id);
+
+        // Update owner's currentRecipeCount
+        if (ownerId) {
+            await User.findByIdAndUpdate(ownerId, {
+                $inc: { currentRecipeCount: -1 }
+            });
+        }
+
         res.json({ message: 'Receta eliminada' });
     } catch (err) {
         res.status(500).json({ message: err.message });

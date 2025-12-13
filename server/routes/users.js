@@ -17,11 +17,15 @@ router.get('/', async (req, res) => {
         // Get recipe counts for each user
         const usersWithCounts = await Promise.all(users.map(async (user) => {
             const recipeCount = await Recipe.countDocuments({ createdBy: user._id });
-            const planLimits = PLAN_LIMITS[user.plan || 'free'];
+            const userPlan = user.planType || 'free';
+            const planLimits = PLAN_LIMITS[userPlan];
 
             return {
                 ...user,
-                recipeCount,
+                planType: userPlan,
+                plan: userPlan, // Alias for backwards compatibility
+                currentRecipeCount: recipeCount,
+                recipeCount, // Alias
                 recipeLimit: planLimits.maxRecipes,
                 recipePercentage: planLimits.maxRecipes === Infinity
                     ? 0
@@ -137,7 +141,7 @@ router.put('/:id/plan', async (req, res) => {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        user.plan = plan;
+        user.planType = plan;
 
         // Set premium dates if upgrading
         if (plan === 'premium') {
@@ -156,7 +160,9 @@ router.put('/:id/plan', async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
-                plan: user.plan,
+                planType: user.planType,
+                plan: user.planType, // Alias
+                currentRecipeCount: user.currentRecipeCount,
                 premiumStartDate: user.premiumStartDate
             }
         });

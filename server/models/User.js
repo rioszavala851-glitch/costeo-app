@@ -28,10 +28,15 @@ const UserSchema = new mongoose.Schema({
         // e.g., 'create_recipe', 'delete_user', 'access_cloud'
     }],
     // ========== FREEMIUM MODEL FIELDS ==========
-    plan: {
+    planType: {
         type: String,
         enum: ['free', 'premium'],
         default: 'free'
+    },
+    // Cached recipe count for quick access
+    currentRecipeCount: {
+        type: Number,
+        default: 0
     },
     // Track active session for single-device sync (free users)
     activeSessionToken: {
@@ -52,6 +57,13 @@ const UserSchema = new mongoose.Schema({
         default: null
     }
 }, { timestamps: true });
+
+// Virtual alias for backwards compatibility (plan -> planType)
+UserSchema.virtual('plan').get(function () {
+    return this.planType;
+}).set(function (value) {
+    this.planType = value;
+});
 
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
