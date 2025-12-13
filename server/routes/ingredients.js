@@ -3,13 +3,40 @@ const router = express.Router();
 const Ingredient = require('../models/Ingredient');
 const { auth, authorizeRole } = require('../middleware/auth');
 const { validateIngredient } = require('../middleware/validators/ingredientValidator');
+const { parsePaginationParams, buildPaginationMeta, applyPagination, buildSearchFilter } = require('../utils/pagination');
 
 // @route   GET /api/ingredients
-// @desc    Get all ingredients (Authenticated users)
+// @desc    Get all ingredients (Authenticated users) - Supports pagination
 router.get('/', auth, async (req, res) => {
     try {
-        const ingredients = await Ingredient.find();
-        res.json(ingredients);
+        const pagination = parsePaginationParams(req.query, {
+            defaultLimit: 50,
+            defaultSort: { name: 1 }
+        });
+
+        // Build search filter
+        const searchFilter = buildSearchFilter(pagination.search, ['name', 'category']);
+
+        // Get total count
+        const total = await Ingredient.countDocuments(searchFilter);
+
+        // Check if pagination is requested
+        if (req.query.page || req.query.limit) {
+            const query = applyPagination(
+                Ingredient.find(searchFilter),
+                pagination
+            );
+            const ingredients = await query;
+
+            res.json({
+                data: ingredients,
+                pagination: buildPaginationMeta(total, pagination.page, pagination.limit)
+            });
+        } else {
+            // Return all without pagination for backwards compatibility
+            const ingredients = await Ingredient.find(searchFilter).sort(pagination.sort);
+            res.json(ingredients);
+        }
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

@@ -5,31 +5,42 @@ const User = require('../models/User');
 const { auth, authorizeRole } = require('../middleware/auth');
 const { checkRecipeLimit, PLAN_LIMITS, getUserRecipeCount } = require('../middleware/planLimits');
 const { validateRecipe } = require('../middleware/validators/recipeValidator');
+const { parsePaginationParams, buildPaginationMeta, applyPagination, buildSearchFilter } = require('../utils/pagination');
+const logger = require('../utils/logger');
 
 // @route   GET /api/recipes
-// @desc    Get all recipes (Authenticated users) - Shows all org recipes but counts per user
-// @route   GET /api/recipes
-// @desc    Get all recipes (Authenticated users) - Supports pagination
+// @desc    Get all recipes (Authenticated users) - Supports pagination and search
 router.get('/', auth, async (req, res) => {
     try {
         const user = req.user;
+        const pagination = parsePaginationParams(req.query, {
+            defaultLimit: 20,
+            defaultSort: { createdAt: -1 }
+        });
 
-        let query = Recipe.find();
-        let total = await Recipe.countDocuments();
+        // Build search filter
+        const searchFilter = buildSearchFilter(pagination.search, ['name', 'category']);
 
-        // Pagination Logic
-        if (req.query.page && req.query.limit) {
-            const page = parseInt(req.query.page) || 1;
-            const limit = parseInt(req.query.limit) || 20;
-            const skip = (page - 1) * limit;
+        // Get total count
+        const total = await Recipe.countDocuments(searchFilter);
 
-            query = query.skip(skip).limit(limit);
+        // Build query
+        let recipes;
+        if (req.query.page || req.query.limit) {
+            const query = applyPagination(
+                Recipe.find(searchFilter)
+                    .populate('items.item')
+                    .populate('createdBy', 'name email'),
+                pagination
+            );
+            recipes = await query;
+        } else {
+            // Return all without pagination for backwards compatibility
+            recipes = await Recipe.find(searchFilter)
+                .populate('items.item')
+                .populate('createdBy', 'name email')
+                .sort(pagination.sort);
         }
-
-        // Get recipes (with populated items)
-        const recipes = await query
-            .populate('items.item')
-            .populate('createdBy', 'name email');
 
         // Count recipes BY THIS USER for limit tracking
         const planLimits = PLAN_LIMITS[user.plan || 'free'];
@@ -43,14 +54,12 @@ router.get('/', auth, async (req, res) => {
                 remaining: Math.max(0, planLimits.maxRecipes - userRecipeCount),
                 isPremium: user.plan === 'premium'
             },
-            pagination: req.query.page ? {
-                page: parseInt(req.query.page),
-                limit: parseInt(req.query.limit),
-                total,
-                pages: Math.ceil(total / (parseInt(req.query.limit) || 20))
-            } : null
+            pagination: (req.query.page || req.query.limit)
+                ? buildPaginationMeta(total, pagination.page, pagination.limit)
+                : null
         });
     } catch (err) {
+        logger.error('Error fetching recipes', { error: err.message });
         res.status(500).json({ message: err.message });
     }
 });

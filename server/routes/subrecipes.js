@@ -3,13 +3,42 @@ const router = express.Router();
 const SubRecipe = require('../models/SubRecipe');
 const { auth, authorizeRole } = require('../middleware/auth');
 const { validateSubRecipe } = require('../middleware/validators/subRecipeValidator');
+const { parsePaginationParams, buildPaginationMeta, applyPagination, buildSearchFilter } = require('../utils/pagination');
 
 // @route   GET /api/subrecipes
-// @desc    Get all subrecipes (Authenticated users)
+// @desc    Get all subrecipes (Authenticated users) - Supports pagination
 router.get('/', auth, async (req, res) => {
     try {
-        const subrecipes = await SubRecipe.find().populate('items.item');
-        res.json(subrecipes);
+        const pagination = parsePaginationParams(req.query, {
+            defaultLimit: 50,
+            defaultSort: { name: 1 }
+        });
+
+        // Build search filter
+        const searchFilter = buildSearchFilter(pagination.search, ['name']);
+
+        // Get total count
+        const total = await SubRecipe.countDocuments(searchFilter);
+
+        // Check if pagination is requested
+        if (req.query.page || req.query.limit) {
+            const query = applyPagination(
+                SubRecipe.find(searchFilter).populate('items.item'),
+                pagination
+            );
+            const subrecipes = await query;
+
+            res.json({
+                data: subrecipes,
+                pagination: buildPaginationMeta(total, pagination.page, pagination.limit)
+            });
+        } else {
+            // Return all without pagination for backwards compatibility
+            const subrecipes = await SubRecipe.find(searchFilter)
+                .populate('items.item')
+                .sort(pagination.sort);
+            res.json(subrecipes);
+        }
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

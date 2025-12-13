@@ -184,29 +184,33 @@ const logger = winston.createLogger({
 
 ---
 
-### 9. Paginación en Listas Grandes
-**Problema:** `GET /api/recipes` retorna TODAS las recetas.
+### 9. Paginación en Listas Grandes ✅ IMPLEMENTADO
+**Estado:** Implementado en todas las rutas principales.
 
-**Impacto:** Performance degradada con muchas recetas.
+**Rutas con paginación:**
+- `GET /api/recipes?page=1&limit=20&search=pollo`
+- `GET /api/ingredients?page=1&limit=50&search=sal`
+- `GET /api/subrecipes?page=1&limit=50`
+- `GET /api/categories?page=1&limit=50`
 
-**Solución:**
-```javascript
-router.get('/', auth, async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
+**Helper reutilizable:** `server/utils/pagination.js`
 
-    const [recipes, total] = await Promise.all([
-        Recipe.find().skip(skip).limit(limit).populate('items.item'),
-        Recipe.countDocuments()
-    ]);
-
-    res.json({
-        recipes,
-        pagination: { page, limit, total, pages: Math.ceil(total / limit) }
-    });
-});
+**Ejemplo de respuesta paginada:**
+```json
+{
+    "data": [...],
+    "pagination": {
+        "page": 1,
+        "limit": 20,
+        "total": 150,
+        "pages": 8,
+        "hasNextPage": true,
+        "hasPrevPage": false
+    }
+}
 ```
+
+**Nota:** Sin parámetros de paginación, retorna todos los resultados para retrocompatibilidad.
 
 ---
 
