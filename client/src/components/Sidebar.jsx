@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 import { useAuth } from '../contexts/AuthContext';
+import PlanBanner from './PlanBanner';
 
 const Sidebar = ({ isOpen, toggleSidebar, closeSidebar, isMobile, theme, toggleTheme }) => {
     // ... existing state ...
@@ -138,6 +139,9 @@ const Sidebar = ({ isOpen, toggleSidebar, closeSidebar, isMobile, theme, toggleT
                         </div>
                     </div>
                 )}
+
+                {/* Plan Status Banner */}
+                <PlanBanner isOpen={isOpen} />
             </div>
 
             {/* Footer / Theme Toggle */}

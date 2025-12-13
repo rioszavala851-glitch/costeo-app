@@ -119,7 +119,9 @@ const Recipes = () => {
             // Allow Recipes to be used as items?
             // "Products in recipes". 
             // If we include recipes, we must be careful.
-            const recipesData = recipeRes.data.map(r => ({
+            // Handle new response structure: recipeRes.data is now {recipes, limits}
+            const recipesList = recipeRes.data.recipes || recipeRes.data;
+            const recipesData = recipesList.map(r => ({
                 ...r,
                 id: r._id,
                 portions: r.quantity, // map back

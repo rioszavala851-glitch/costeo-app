@@ -104,4 +104,48 @@ router.put('/:id/password', async (req, res) => {
     }
 });
 
+// @route   PUT /api/users/:id/plan
+// @desc    Change user plan (Admin only) - For premium upgrades
+router.put('/:id/plan', async (req, res) => {
+    try {
+        const { plan } = req.body;
+
+        if (!['free', 'premium'].includes(plan)) {
+            return res.status(400).json({ message: 'Plan inválido. Use "free" o "premium"' });
+        }
+
+        const user = await User.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        user.plan = plan;
+
+        // Set premium dates if upgrading
+        if (plan === 'premium') {
+            user.premiumStartDate = new Date();
+            user.premiumEndDate = null; // Or set expiration date for subscriptions
+        } else {
+            user.premiumStartDate = null;
+            user.premiumEndDate = null;
+        }
+
+        await user.save();
+
+        res.json({
+            message: `Plan actualizado a ${plan === 'premium' ? 'Premium' : 'Gratuito'}`,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                plan: user.plan,
+                premiumStartDate: user.premiumStartDate
+            }
+        });
+    } catch (err) {
+        console.error('Error changing plan:', err);
+        res.status(500).json({ message: 'Error al cambiar plan' });
+    }
+});
+
 module.exports = router;

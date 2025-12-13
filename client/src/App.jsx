@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { PlanProvider } from './contexts/PlanContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
@@ -146,7 +147,9 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppContent />
+        <PlanProvider>
+          <AppContent />
+        </PlanProvider>
       </AuthProvider>
     </Router>
   );

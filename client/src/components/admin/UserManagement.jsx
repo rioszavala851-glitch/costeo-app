@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
-import { User, Trash2, Plus, Pencil, Save, X, Key } from 'lucide-react';
+import { User, Trash2, Plus, Pencil, Save, X, Key, Crown } from 'lucide-react';
 import styles from '../../pages/Admin.module.css';
 
 const UserManagement = () => {
@@ -119,6 +119,25 @@ const UserManagement = () => {
         }
     };
 
+    // Toggle user plan (free <-> premium)
+    const handleTogglePlan = async (user) => {
+        const newPlan = user.plan === 'premium' ? 'free' : 'premium';
+        const confirmMsg = newPlan === 'premium'
+            ? `¿Actualizar a ${user.name} al plan Premium?`
+            : `¿Cambiar a ${user.name} al plan Gratuito?`;
+
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+            const res = await api.put(`/users/${user._id}/plan`, { plan: newPlan });
+            setUsers(users.map(u => u._id === user._id ? { ...u, plan: newPlan } : u));
+            alert(res.data.message);
+        } catch (error) {
+            console.error('Error toggling plan:', error);
+            alert('Error al cambiar plan: ' + (error.response?.data?.message || 'Error desconocido'));
+        }
+    };
+
     const roleLabels = {
         admin: 'Administración',
         chef: 'Chef',
@@ -209,11 +228,37 @@ const UserManagement = () => {
                                     <User size={20} color="var(--accent-color)" />
                                 </div>
                                 <div>
-                                    <div className={styles.userName}>{user.name}</div>
+                                    <div className={styles.userName}>
+                                        {user.name}
+                                        {user.plan === 'premium' && (
+                                            <Crown size={14} color="#f59e0b" style={{ marginLeft: '0.5rem' }} />
+                                        )}
+                                    </div>
                                     <div className={styles.userEmail}>{user.email}</div>
                                 </div>
                             </div>
                             <div className={styles.userActions}>
+                                {/* Plan Badge */}
+                                <span
+                                    onClick={() => handleTogglePlan(user)}
+                                    style={{
+                                        padding: '0.25rem 0.5rem',
+                                        borderRadius: '0.25rem',
+                                        fontSize: '0.7rem',
+                                        fontWeight: 'bold',
+                                        cursor: 'pointer',
+                                        background: user.plan === 'premium'
+                                            ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.2))'
+                                            : 'rgba(255, 255, 255, 0.05)',
+                                        border: user.plan === 'premium'
+                                            ? '1px solid rgba(245, 158, 11, 0.5)'
+                                            : '1px solid var(--glass-border)',
+                                        color: user.plan === 'premium' ? '#f59e0b' : 'var(--text-secondary)'
+                                    }}
+                                    title={`Click para cambiar a ${user.plan === 'premium' ? 'Gratuito' : 'Premium'}`}
+                                >
+                                    {user.plan === 'premium' ? '★ PREMIUM' : 'GRATIS'}
+                                </span>
                                 <span className={`${styles.roleBadge} ${roleStyles[user.role] || styles.roleUser}`}>
                                     {roleLabels[user.role] || user.role}
                                 </span>

@@ -26,7 +26,31 @@ const UserSchema = new mongoose.Schema({
     permissions: [{
         type: String
         // e.g., 'create_recipe', 'delete_user', 'access_cloud'
-    }]
+    }],
+    // ========== FREEMIUM MODEL FIELDS ==========
+    plan: {
+        type: String,
+        enum: ['free', 'premium'],
+        default: 'free'
+    },
+    // Track active session for single-device sync (free users)
+    activeSessionToken: {
+        type: String,
+        default: null
+    },
+    activeSessionCreatedAt: {
+        type: Date,
+        default: null
+    },
+    // Premium subscription dates (for future use)
+    premiumStartDate: {
+        type: Date,
+        default: null
+    },
+    premiumEndDate: {
+        type: Date,
+        default: null
+    }
 }, { timestamps: true });
 
 // Hash password before saving

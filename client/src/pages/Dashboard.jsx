@@ -93,7 +93,9 @@ const Dashboard = () => {
                 const subRecipesMap = new Map(subRecipesData.map(s => [s.id, s]));
 
                 // Process recipes and calculate their costs
-                const recipesData = recipeRes.data.map(recipe => {
+                // Handle new response structure: recipeRes.data is now {recipes, limits}
+                const recipesList = recipeRes.data.recipes || recipeRes.data;
+                const recipesData = recipesList.map(recipe => {
                     let totalCost = 0;
 
                     if (recipe.items && recipe.items.length > 0) {
