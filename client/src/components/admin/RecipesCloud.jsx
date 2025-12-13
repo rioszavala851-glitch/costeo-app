@@ -136,12 +136,11 @@ const RecipesCloud = () => {
                                     width: '100%',
                                     padding: '1rem',
                                     borderRadius: '0.75rem',
-                                    border: 'none',
+                                    border: plan.popular ? 'none' : '1px solid var(--glass-border)',
                                     background: plan.popular ? 'var(--accent-color)' : 'var(--bg-card)',
                                     color: plan.popular ? 'white' : 'var(--text-primary)',
                                     fontWeight: 'bold',
-                                    cursor: 'pointer',
-                                    border: plan.popular ? 'none' : '1px solid var(--glass-border)'
+                                    cursor: 'pointer'
                                 }}
                             >
                                 Seleccionar Plan
