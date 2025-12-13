@@ -16,8 +16,22 @@ connectDB();
 
 const app = express();
 
-// Security Middleware
-app.use(helmet());
+// Security Middleware - Configure Helmet with relaxed CSP for development
+app.use(helmet({
+    contentSecurityPolicy: process.env.NODE_ENV === 'production'
+        ? {
+            directives: {
+                defaultSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+                fontSrc: ["'self'", "https://fonts.gstatic.com"],
+                scriptSrc: ["'self'"],
+                imgSrc: ["'self'", "data:", "blob:"],
+                connectSrc: ["'self'"]
+            }
+        }
+        : false, // Disable CSP in development
+    crossOriginEmbedderPolicy: false
+}));
 
 // Rate Limiting
 const limiter = rateLimit({
