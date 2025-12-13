@@ -49,45 +49,76 @@ const getPlanLimits = (plan) => {
     return PLAN_LIMITS[plan] || PLAN_LIMITS.free;
 };
 
+// ========== BACKEND "LOCK" - CRITICAL SECURITY ==========
+// This is the most important security check. Never trust frontend only.
+
+const LIMITE_FREE = 30; // Centralizada para fácil mantenimiento
+
 /**
- * Check if user can create more recipes
- * Counts recipes PER USER for proper freemium limits
+ * 🔒 CANDADO DEL BACKEND - Verificación de Límite de Recetas
+ * Este middleware BLOQUEA la creación de recetas si el usuario excede su límite.
+ * NUNCA confíes solo en el frontend para esto.
  */
 const checkRecipeLimit = async (req, res, next) => {
     try {
         const user = req.user;
-        const userPlan = user.planType || user.plan || 'free';
-        const planLimits = getPlanLimits(userPlan);
 
-        // Premium users have no limit
-        if (userPlan === 'premium') {
-            return next();
-        }
-
-        // Count recipes created BY THIS USER specifically
-        const recipeCount = await Recipe.countDocuments({ createdBy: user.id });
-
-        if (recipeCount >= planLimits.maxRecipes) {
-            return res.status(403).json({
-                message: `Has alcanzado el límite de ${planLimits.maxRecipes} recetas del plan gratuito. Actualiza a Premium para recetas ilimitadas.`,
-                error: 'RECIPE_LIMIT_REACHED',
-                limit: planLimits.maxRecipes,
-                current: recipeCount,
-                upgradeRequired: true
+        // Validación de usuario
+        if (!user || !user.id) {
+            console.error('[LIMIT_CHECK] ❌ No user found in request');
+            return res.status(401).json({
+                error: 'UNAUTHORIZED',
+                message: 'Usuario no autenticado'
             });
         }
 
-        // Add remaining count to request for frontend
+        const userPlan = user.planType || user.plan || 'free';
+        const planLimits = getPlanLimits(userPlan);
+
+        // ✅ Premium users: Sin límite
+        if (userPlan === 'premium') {
+            console.log(`[LIMIT_CHECK] ✅ Usuario ${user.id} es Premium - Sin límite`);
+            return next();
+        }
+
+        // 🔍 Contar recetas EN TIEMPO REAL (no confiar en cache para el candado)
+        const cantidadActual = await Recipe.countDocuments({ createdBy: user.id });
+
+        console.log(`[LIMIT_CHECK] Usuario ${user.id} - Plan: ${userPlan} - Recetas: ${cantidadActual}/${planLimits.maxRecipes}`);
+
+        // 🔒 VERIFICACIÓN DEL LÍMITE
+        if (cantidadActual >= LIMITE_FREE) {
+            console.warn(`[LIMIT_CHECK] ⛔ BLOQUEADO: Usuario ${user.id} alcanzó límite (${cantidadActual}/${LIMITE_FREE})`);
+
+            return res.status(403).json({
+                error: 'LIMIT_REACHED',
+                message: `Has alcanzado el límite de ${LIMITE_FREE} recetas gratuitas. Actualiza a Premium para recetas ilimitadas.`,
+                limit: LIMITE_FREE,
+                current: cantidadActual,
+                upgradeRequired: true,
+                upgradeUrl: '/admin?tab=premium' // URL para upgrade
+            });
+        }
+
+        // ✅ Pasa la validación - puede continuar
+        console.log(`[LIMIT_CHECK] ✅ Usuario ${user.id} puede crear receta (${cantidadActual + 1}/${LIMITE_FREE})`);
+
+        // Agregar info del límite al request para el frontend
         req.recipeLimit = {
-            max: planLimits.maxRecipes,
-            current: recipeCount,
-            remaining: planLimits.maxRecipes - recipeCount
+            max: LIMITE_FREE,
+            current: cantidadActual,
+            remaining: LIMITE_FREE - cantidadActual - 1, // -1 porque está por crear una
+            nearLimit: (LIMITE_FREE - cantidadActual) <= 5
         };
 
         next();
     } catch (error) {
-        console.error('Error checking recipe limit:', error);
-        next(error);
+        console.error('[LIMIT_CHECK] ❌ Error checking recipe limit:', error);
+        // En caso de error, bloquear por seguridad
+        return res.status(500).json({
+            error: 'LIMIT_CHECK_ERROR',
+            message: 'Error al verificar límite de recetas. Intenta de nuevo.'
+        });
     }
 };
 
@@ -197,6 +228,7 @@ const getUserRecipeCount = async (userId) => {
 
 module.exports = {
     PLAN_LIMITS,
+    LIMITE_FREE,
     getPlanLimits,
     checkRecipeLimit,
     checkFeatureAccess,
