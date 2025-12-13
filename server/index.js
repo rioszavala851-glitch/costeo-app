@@ -4,7 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const mongoSanitize = require('./middleware/mongoSanitize');
-const xss = require('xss-clean');
+const xssSanitize = require('./middleware/xssSanitize');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 
@@ -59,7 +59,7 @@ app.use(express.json());
 
 // Data Sanitization
 app.use(mongoSanitize());
-app.use(xss());
+app.use(xssSanitize());
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

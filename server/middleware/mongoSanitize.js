@@ -1,24 +1,48 @@
+/**
+ * MongoDB Sanitization Middleware - Compatible with Express 5
+ * Prevents NoSQL injection by removing $ and . operators from req.body only
+ * (req.query and req.params are read-only in Express 5)
+ */
+
 const sanitize = (obj) => {
-    if (obj instanceof Object) {
+    if (obj === null || obj === undefined) return obj;
+
+    if (typeof obj === 'string') {
+        return obj;
+    }
+
+    if (Array.isArray(obj)) {
+        return obj.map(item => sanitize(item));
+    }
+
+    if (typeof obj === 'object') {
+        const sanitized = {};
         for (const key in obj) {
-            if (/^\$/.test(key)) {
-                delete obj[key];
-            } else if (key.includes('.') && key !== 'content-type') { // Preserve content-type if it ends up in headers? usually we sanitize body/params/query.
-                 delete obj[key];
-            } else {
-                sanitize(obj[key]);
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                // Skip keys that start with $ (MongoDB operators)
+                if (key.startsWith('$')) {
+                    continue;
+                }
+                // Skip keys that contain . (MongoDB nested field access)
+                if (key.includes('.')) {
+                    continue;
+                }
+                sanitized[key] = sanitize(obj[key]);
             }
         }
+        return sanitized;
     }
+
     return obj;
 };
 
 module.exports = () => {
     return (req, res, next) => {
         try {
-            if (req.body) sanitize(req.body);
-            if (req.params) sanitize(req.params);
-            if (req.query) sanitize(req.query);
+            // Only sanitize body - query and params are read-only in Express 5
+            if (req.body) {
+                req.body = sanitize(req.body);
+            }
         } catch (err) {
             console.error('Error in mongoSanitize middleware:', err);
         }

@@ -13,7 +13,7 @@ const loginValidation = [
         .normalizeEmail(),
     body('password')
         .notEmpty().withMessage('Password is required')
-        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+        .isLength({ min: 4 }).withMessage('Password must be at least 4 characters')
 ];
 
 // @route   POST /api/auth/login
