@@ -106,7 +106,7 @@ function AppContent() {
 
       <main
         style={{
-          marginLeft: isMobile ? 0 : (isSidebarOpen ? '260px' : '80px'),
+          marginLeft: isMobile ? 0 : (isSidebarOpen ? '1.5px' : '8px'),
           padding: '1.5rem',
           width: '100%',
           transition: 'margin-left 0.3s ease',
