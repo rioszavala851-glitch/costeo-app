@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Ingredient = require('../models/Ingredient');
 const { auth, authorizeRole } = require('../middleware/auth');
+const { validateIngredient } = require('../middleware/validators/ingredientValidator');
 
 // @route   GET /api/ingredients
 // @desc    Get all ingredients (Authenticated users)
@@ -16,7 +17,7 @@ router.get('/', auth, async (req, res) => {
 
 // @route   POST /api/ingredients
 // @desc    Create an ingredient (Admin & Chef)
-router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+router.post('/', auth, authorizeRole(['admin', 'chef']), validateIngredient, async (req, res) => {
     // Map frontend 'price' to backend 'cost' if necessary
     const costValue = req.body.cost !== undefined ? req.body.cost : req.body.price;
 
@@ -40,7 +41,7 @@ router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
 
 // @route   PUT /api/ingredients/:id
 // @desc    Update an ingredient (Admin & Chef)
-router.put('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+router.put('/:id', auth, authorizeRole(['admin', 'chef']), validateIngredient, async (req, res) => {
     try {
         const { name, unit, cost, price, yield: yieldVal, category, isActive } = req.body;
 

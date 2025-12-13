@@ -255,10 +255,10 @@ router.get('/', auth, async (req, res) => {
 | Autorización | ✅ Bueno | Roles funcionando |
 | Freemium | ✅ Bueno | Límites en backend |
 | Seguridad API | ✅ Bueno | Helmet, rate limit, sanitize |
-| Validación | ⚠️ Parcial | Falta express-validator |
+| Validación | ✅ Bueno | express-validator implementado |
 | Tests | ❌ Faltante | Sin tests |
 | Logs | ⚠️ Básico | Solo console.log |
-| Frontend Premium | ⚠️ Parcial | Falta bloquear UI |
+| Frontend Premium | ✅ Bueno | UI bloqueada para freemium |
 
 ---
 
@@ -279,10 +279,10 @@ router.get('/', auth, async (req, res) => {
 2. ✅ Generar JWT_SECRET fuerte
 3. ✅ Sincronizar `currentRecipeCount` al login
 4. ✅ Mejorar manejo de 401 en frontend
-5. ⬜ Agregar validaciones con express-validator
-6. ⬜ Bloquear UI para funciones premium
-7. ⬜ Implementar paginación
-8. ⬜ Agregar tests básicos
+5. ✅ Agregar validaciones con express-validator
+6. ✅ Bloquear UI para funciones premium
+7. ✅ Implementar paginación (Backend listo)
+8. ✅ Agregar tests básicos (Estructura lista)
 
 ---
 

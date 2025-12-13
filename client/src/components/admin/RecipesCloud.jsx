@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
 import { Cloud, Download, DollarSign } from 'lucide-react';
+import { usePlan } from '../../contexts/PlanContext';
 
 const RecipesCloud = () => {
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showPlans, setShowPlans] = useState(false);
-    const [isSubscribed, setIsSubscribed] = useState(false); // Mock subscription state
+    const { hasFeature } = usePlan();
+
+    const isSubscribed = hasFeature('cloudSync');
 
     useEffect(() => {
         fetchRecipes();
@@ -128,9 +131,8 @@ const RecipesCloud = () => {
 
                             <button
                                 onClick={() => {
-                                    setIsSubscribed(true);
                                     setShowPlans(false);
-                                    alert(`Has seleccionado el plan ${plan.label}. ¡Bienvenido a la nube!`);
+                                    alert(`Has seleccionado el plan ${plan.label}. Contacta a ventas para activar tu cuenta.`);
                                 }}
                                 style={{
                                     width: '100%',

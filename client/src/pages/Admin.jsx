@@ -2,16 +2,19 @@ import React, { useState } from 'react';
 import UserManagement from '../components/admin/UserManagement';
 import PermissionsTab from '../components/admin/PermissionsTab';
 import RecipesCloud from '../components/admin/RecipesCloud';
-import { Users, Lock, Cloud } from 'lucide-react';
+import { Users, Lock, Cloud, LockKeyhole } from 'lucide-react';
 import styles from './Admin.module.css';
+import { usePlan } from '../contexts/PlanContext';
 
 const Admin = () => {
     const [activeTab, setActiveTab] = useState('users');
+    const { hasFeature } = usePlan();
+    const hasCloud = hasFeature('cloudSync');
 
     const tabs = [
         { id: 'users', label: 'Usuarios', icon: Users },
         { id: 'permissions', label: 'Permisos', icon: Lock },
-        { id: 'cloud', label: 'Nube de Recetas', icon: Cloud },
+        { id: 'cloud', label: 'Nube de Recetas', icon: Cloud, locked: !hasCloud },
     ];
 
     return (
@@ -28,6 +31,7 @@ const Admin = () => {
                     >
                         <tab.icon size={18} />
                         {tab.label}
+                        {tab.locked && <LockKeyhole size={14} style={{ marginLeft: 'auto', opacity: 0.7 }} />}
                     </button>
                 ))}
             </div>

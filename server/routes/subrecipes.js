@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const SubRecipe = require('../models/SubRecipe');
 const { auth, authorizeRole } = require('../middleware/auth');
+const { validateSubRecipe } = require('../middleware/validators/subRecipeValidator');
 
 // @route   GET /api/subrecipes
 // @desc    Get all subrecipes (Authenticated users)
@@ -16,7 +17,7 @@ router.get('/', auth, async (req, res) => {
 
 // @route   POST /api/subrecipes
 // @desc    Create a subrecipe (Admin & Chef)
-router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+router.post('/', auth, authorizeRole(['admin', 'chef']), validateSubRecipe, async (req, res) => {
     const subRecipe = new SubRecipe(req.body);
     try {
         const newSubRecipe = await subRecipe.save();
@@ -28,7 +29,7 @@ router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
 
 // @route   PUT /api/subrecipes/:id
 // @desc    Update a subrecipe
-router.put('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+router.put('/:id', auth, authorizeRole(['admin', 'chef']), validateSubRecipe, async (req, res) => {
     try {
         const subRecipe = await SubRecipe.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!subRecipe) return res.status(404).json({ message: 'Sub-receta no encontrada' });

@@ -4,18 +4,34 @@ const Recipe = require('../models/Recipe');
 const User = require('../models/User');
 const { auth, authorizeRole } = require('../middleware/auth');
 const { checkRecipeLimit, PLAN_LIMITS, getUserRecipeCount } = require('../middleware/planLimits');
+const { validateRecipe } = require('../middleware/validators/recipeValidator');
 
 // @route   GET /api/recipes
 // @desc    Get all recipes (Authenticated users) - Shows all org recipes but counts per user
+// @route   GET /api/recipes
+// @desc    Get all recipes (Authenticated users) - Supports pagination
 router.get('/', auth, async (req, res) => {
     try {
-        // Get all recipes for the organization (populate items)
-        const recipes = await Recipe.find()
+        const user = req.user;
+
+        let query = Recipe.find();
+        let total = await Recipe.countDocuments();
+
+        // Pagination Logic
+        if (req.query.page && req.query.limit) {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 20;
+            const skip = (page - 1) * limit;
+
+            query = query.skip(skip).limit(limit);
+        }
+
+        // Get recipes (with populated items)
+        const recipes = await query
             .populate('items.item')
             .populate('createdBy', 'name email');
 
         // Count recipes BY THIS USER for limit tracking
-        const user = req.user;
         const planLimits = PLAN_LIMITS[user.plan || 'free'];
         const userRecipeCount = await Recipe.countDocuments({ createdBy: user.id });
 
@@ -26,7 +42,13 @@ router.get('/', auth, async (req, res) => {
                 current: userRecipeCount,
                 remaining: Math.max(0, planLimits.maxRecipes - userRecipeCount),
                 isPremium: user.plan === 'premium'
-            }
+            },
+            pagination: req.query.page ? {
+                page: parseInt(req.query.page),
+                limit: parseInt(req.query.limit),
+                total,
+                pages: Math.ceil(total / (parseInt(req.query.limit) || 20))
+            } : null
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -35,7 +57,7 @@ router.get('/', auth, async (req, res) => {
 
 // @route   POST /api/recipes
 // @desc    Create a recipe (Admin & Chef) - WITH LIMIT CHECK per user
-router.post('/', auth, authorizeRole(['admin', 'chef']), checkRecipeLimit, async (req, res) => {
+router.post('/', auth, authorizeRole(['admin', 'chef']), checkRecipeLimit, validateRecipe, async (req, res) => {
     try {
         // Automatically assign the creator
         const recipeData = {
@@ -66,7 +88,7 @@ router.post('/', auth, authorizeRole(['admin', 'chef']), checkRecipeLimit, async
 
 // @route   PUT /api/recipes/:id
 // @desc    Update a recipe (owner or admin only)
-router.put('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+router.put('/:id', auth, authorizeRole(['admin', 'chef']), validateRecipe, async (req, res) => {
     try {
         const recipe = await Recipe.findById(req.params.id);
         if (!recipe) return res.status(404).json({ message: 'Receta no encontrada' });
