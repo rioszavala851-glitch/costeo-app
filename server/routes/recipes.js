@@ -26,4 +26,28 @@ router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
     }
 });
 
+// @route   PUT /api/recipes/:id
+// @desc    Update a recipe
+router.put('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+    try {
+        const recipe = await Recipe.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!recipe) return res.status(404).json({ message: 'Receta no encontrada' });
+        res.json(recipe);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// @route   DELETE /api/recipes/:id
+// @desc    Delete a recipe
+router.delete('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+    try {
+        const recipe = await Recipe.findByIdAndDelete(req.params.id);
+        if (!recipe) return res.status(404).json({ message: 'Receta no encontrada' });
+        res.json({ message: 'Receta eliminada' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

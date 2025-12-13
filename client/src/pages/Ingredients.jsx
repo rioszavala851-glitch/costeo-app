@@ -2,46 +2,68 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, FileSpreadsheet, Search, Filter, Download, Save, X, DollarSign, Ban, CheckCircle, Pencil, ChefHat } from 'lucide-react';
 import * as XLSX from 'xlsx';
-import axios from 'axios';
+import api from '../api';
 import styles from './Ingredients.module.css';
 
 /**
- * Recalcula el costo total de una sub-receta basándose en sus ingredientes
- * usando la fórmula de costeo real
+ * Calcula el costo de un ingrediente/item para una sub-receta
+ */
+const calculateItemCost = (price, yieldPercent, priceUnit, useUnit, quantity) => {
+    const priceNum = Number(price) || 0;
+    const yieldNum = Number(yieldPercent) || 100;
+    const qtyNum = Number(quantity) || 0;
+
+    // Precio Real = Precio / (Rendimiento / 100)
+    const realPrice = yieldNum > 0 ? priceNum / (yieldNum / 100) : priceNum;
+
+    // Determinar unidades
+    const priceUnitLower = (priceUnit || '').toLowerCase();
+    const useUnitLower = (useUnit || priceUnit || '').toLowerCase();
+
+    // Calcular costo unitario con conversión si es necesario
+    let unitCost = realPrice;
+    if ((priceUnitLower === 'kg' && useUnitLower === 'gr') ||
+        (priceUnitLower === 'lt' && useUnitLower === 'ml')) {
+        unitCost = realPrice / 1000;
+    } else if ((priceUnitLower === 'gr' && useUnitLower === 'kg') ||
+        (priceUnitLower === 'ml' && useUnitLower === 'lt')) {
+        unitCost = realPrice * 1000;
+    }
+
+    return unitCost * qtyNum;
+};
+
+/**
+ * Recalcula el costo total de una sub-receta basándose en sus items
+ * usando la fórmula de costeo real - Usa la estructura de la API (items)
  */
 const recalculateSubRecipeCost = (subRecipe, ingredientsMap) => {
-    if (!subRecipe.ingredients || subRecipe.ingredients.length === 0) {
+    // La API usa 'items' no 'ingredients'
+    if (!subRecipe.items || subRecipe.items.length === 0) {
         return Number(subRecipe.cost) || 0;
     }
 
-    return subRecipe.ingredients.reduce((acc, ing) => {
-        // Buscar el ingrediente actualizado en el mapa global
-        const currentIng = ingredientsMap ? ingredientsMap.get(ing.id) : null;
+    return subRecipe.items.reduce((acc, itemWrapper) => {
+        const itemObj = itemWrapper.item; // El item poblado desde la API
+        if (!itemObj) return acc;
 
-        // Usar precio y rendimiento actual si existe, sino el guardado (snapshot)
-        const priceNum = currentIng ? (Number(currentIng.price) || 0) : (Number(ing.price) || 0);
-        const yieldNum = currentIng ? (Number(currentIng.yield) || 100) : (Number(ing.yield) || 100);
+        // Buscar el ingrediente actualizado en el mapa global usando _id
+        const itemId = itemObj._id || itemObj.id;
+        const currentIng = ingredientsMap ? ingredientsMap.get(itemId) : null;
 
-        const qtyNum = Number(ing.quantity) || 0;
+        // Usar precio y rendimiento actual si existe, sino el guardado
+        const priceNum = currentIng ? (Number(currentIng.price) || 0) : (Number(itemObj.cost) || 0);
+        const yieldNum = currentIng ? (Number(currentIng.yield) || 100) : (Number(itemObj.yield) || 100);
 
-        // Precio Real = Precio / (Rendimiento / 100)
-        const realPrice = yieldNum > 0 ? priceNum / (yieldNum / 100) : priceNum;
+        const cost = calculateItemCost(
+            priceNum,
+            yieldNum,
+            itemObj.unit,
+            itemObj.unit,
+            itemWrapper.quantity
+        );
 
-        // Determinar unidades
-        const priceUnitLower = (ing.priceUnit || ing.unit || '').toLowerCase();
-        const useUnitLower = (ing.useUnit || ing.unit || '').toLowerCase();
-
-        // Calcular costo unitario con conversión si es necesario
-        let unitCost = realPrice;
-        if ((priceUnitLower === 'kg' && useUnitLower === 'gr') ||
-            (priceUnitLower === 'lt' && useUnitLower === 'ml')) {
-            unitCost = realPrice / 1000;
-        } else if ((priceUnitLower === 'gr' && useUnitLower === 'kg') ||
-            (priceUnitLower === 'ml' && useUnitLower === 'lt')) {
-            unitCost = realPrice * 1000;
-        }
-
-        return acc + (unitCost * qtyNum);
+        return acc + cost;
     }, 0);
 };
 
@@ -51,12 +73,8 @@ const Ingredients = () => {
     const { user } = useAuth();
     const canEdit = user?.role !== 'viewer';
 
-    // Load sub-recipes (keeping localStorage for now as requested/out of scope for this specific file refactor, 
-    // but ideally should be API too. For now we focus on ingredients sync).
-    const [subRecipes, setSubRecipes] = useState(() => {
-        const saved = localStorage.getItem('subRecipes');
-        return saved ? JSON.parse(saved) : [];
-    });
+    // Load sub-recipes from API
+    const [subRecipes, setSubRecipes] = useState([]);
 
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -65,7 +83,7 @@ const Ingredients = () => {
     // Fetch ingredients from API
     const fetchIngredients = async () => {
         try {
-            const res = await axios.get('/api/ingredients');
+            const res = await api.get('/ingredients');
             const data = res.data;
 
             // Map backend fields to frontend state
@@ -80,11 +98,27 @@ const Ingredients = () => {
         }
     };
 
+    // Fetch sub-recipes from API
+    const fetchSubRecipes = async () => {
+        try {
+            const res = await api.get('/subrecipes');
+            const data = res.data;
+
+            // Map backend fields to frontend state
+            const mapped = data.map(sub => ({
+                ...sub,
+                id: sub._id
+            }));
+            setSubRecipes(mapped);
+        } catch (error) {
+            console.error('Error al cargar sub-recetas:', error);
+        }
+    };
+
     useEffect(() => {
         fetchIngredients();
+        fetchSubRecipes();
     }, []);
-
-    // Also reload whenever subRecipes change if needed, but for now just initial load.
 
     const handleSaveManual = async (e) => {
         e.preventDefault();
@@ -102,11 +136,11 @@ const Ingredients = () => {
         try {
             if (editingId) {
                 // UPDATE
-                await axios.put(`/api/ingredients/${editingId}`, payload);
+                await api.put(`/ingredients/${editingId}`, payload);
                 alert("Ingrediente actualizado correctamente");
             } else {
                 // CREATE
-                await axios.post('/api/ingredients', payload);
+                await api.post('/ingredients', payload);
                 alert("Ingrediente agregado correctamente");
             }
             // Refresh list
@@ -137,7 +171,7 @@ const Ingredients = () => {
         const newPrice = prompt("Ingrese el nuevo costo del ingrediente:", currentPrice);
         if (newPrice !== null && !isNaN(newPrice) && newPrice.trim() !== "") {
             try {
-                await axios.put(`/api/ingredients/${id}`, { cost: parseFloat(newPrice) });
+                await api.put(`/ingredients/${id}`, { cost: parseFloat(newPrice) });
                 fetchIngredients();
             } catch (error) {
                 console.error(error);
@@ -150,7 +184,7 @@ const Ingredients = () => {
         if (!window.confirm("¿Seguro que deseas eliminar este ingrediente?")) return;
 
         try {
-            await axios.delete(`/api/ingredients/${id}`);
+            await api.delete(`/ingredients/${id}`);
             fetchIngredients();
         } catch (error) {
             console.error(error);
@@ -199,7 +233,7 @@ const Ingredients = () => {
                     };
 
                     try {
-                        await axios.post('/api/ingredients', payload);
+                        await api.post('/ingredients', payload);
                         count++;
                     } catch (err) {
                         console.error("Error saving row:", row, err);

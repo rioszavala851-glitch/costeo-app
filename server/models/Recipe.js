@@ -6,6 +6,10 @@ const RecipeSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    category: {
+        type: String,
+        default: 'General'
+    },
     quantity: { // Cantidad que rinde la receta
         type: Number,
         required: true

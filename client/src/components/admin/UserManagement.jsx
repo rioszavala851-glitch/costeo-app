@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { User, Trash2, Plus, Pencil, Save, X } from 'lucide-react';
 import styles from '../../pages/Admin.module.css';
 
@@ -16,7 +16,7 @@ const UserManagement = () => {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('/api/users');
+            const res = await api.get('/users');
             setUsers(res.data);
             setLoading(false);
         } catch (error) {
@@ -35,12 +35,12 @@ const UserManagement = () => {
                     role: userData.role,
                     email: userData.email // Email usually immutable but sending for reference
                 };
-                const res = await axios.put(`/api/users/${editingId}`, payload);
+                const res = await api.put(`/users/${editingId}`, payload);
                 setUsers(users.map(u => u._id === editingId ? res.data : u));
                 alert('Usuario actualizado correctamente');
             } else {
                 // Create
-                const res = await axios.post('/api/users', userData);
+                const res = await api.post('/users', userData);
                 setUsers([...users, res.data]);
                 alert('Usuario creado exitosamente');
             }
@@ -54,7 +54,7 @@ const UserManagement = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('¿Seguro que deseas eliminar este usuario?')) return;
         try {
-            await axios.delete(`/api/users/${id}`);
+            await api.delete(`/users/${id}`);
             setUsers(users.filter(u => u._id !== id));
         } catch (error) {
             console.error('Error deleting user:', error);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api';
 import { Cloud, Download, DollarSign } from 'lucide-react';
 
 const RecipesCloud = () => {
@@ -14,7 +14,7 @@ const RecipesCloud = () => {
 
     const fetchRecipes = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/cloud-recipes');
+            const res = await api.get('/cloud-recipes');
             setRecipes(res.data);
             setLoading(false);
         } catch (error) {

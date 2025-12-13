@@ -26,4 +26,28 @@ router.post('/', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
     }
 });
 
+// @route   PUT /api/subrecipes/:id
+// @desc    Update a subrecipe
+router.put('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+    try {
+        const subRecipe = await SubRecipe.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!subRecipe) return res.status(404).json({ message: 'Sub-receta no encontrada' });
+        res.json(subRecipe);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// @route   DELETE /api/subrecipes/:id
+// @desc    Delete a subrecipe
+router.delete('/:id', auth, authorizeRole(['admin', 'chef']), async (req, res) => {
+    try {
+        const subRecipe = await SubRecipe.findByIdAndDelete(req.params.id);
+        if (!subRecipe) return res.status(404).json({ message: 'Sub-receta no encontrada' });
+        res.json({ message: 'Sub-receta eliminada' });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 module.exports = router;

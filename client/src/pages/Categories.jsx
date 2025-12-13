@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Plus, Tag, Trash2, X, Save, Pencil } from 'lucide-react';
 import styles from './Categories.module.css';
 
@@ -11,7 +11,7 @@ const Categories = () => {
 
     const fetchCategories = async () => {
         try {
-            const res = await axios.get('/api/categories');
+            const res = await api.get('/categories');
             const data = res.data;
             setCategories(data.map(cat => ({ ...cat, id: cat._id })));
         } catch (error) {
@@ -27,9 +27,9 @@ const Categories = () => {
         e.preventDefault();
         try {
             if (editingId) {
-                await axios.put(`/api/categories/${editingId}`, newCategory);
+                await api.put(`/categories/${editingId}`, newCategory);
             } else {
-                await axios.post('/api/categories', newCategory);
+                await api.post('/categories', newCategory);
             }
             fetchCategories();
             setIsAdding(false);
@@ -49,7 +49,7 @@ const Categories = () => {
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar esta categoría?')) {
             try {
-                await axios.delete(`/api/categories/${id}`);
+                await api.delete(`/categories/${id}`);
                 fetchCategories();
             } catch (error) {
                 console.error('Error deleting category:', error);

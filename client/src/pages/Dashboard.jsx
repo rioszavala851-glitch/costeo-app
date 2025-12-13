@@ -1,20 +1,158 @@
 import React, { useState, useEffect } from 'react';
 import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, DollarSign, Package } from 'lucide-react';
+import api from '../api';
 import styles from './Dashboard.module.css';
+
+/**
+ * Calcula el costo de un ingrediente/item para una sub-receta
+ */
+const calculateItemCost = (price, yieldPercent, priceUnit, useUnit, quantity) => {
+    const priceNum = Number(price) || 0;
+    const yieldNum = Number(yieldPercent) || 100;
+    const qtyNum = Number(quantity) || 0;
+
+    const realPrice = yieldNum > 0 ? priceNum / (yieldNum / 100) : priceNum;
+
+    const priceUnitLower = (priceUnit || '').toLowerCase();
+    const useUnitLower = (useUnit || priceUnit || '').toLowerCase();
+
+    let unitCost = realPrice;
+    if ((priceUnitLower === 'kg' && useUnitLower === 'gr') ||
+        (priceUnitLower === 'lt' && useUnitLower === 'ml')) {
+        unitCost = realPrice / 1000;
+    } else if ((priceUnitLower === 'gr' && useUnitLower === 'kg') ||
+        (priceUnitLower === 'ml' && useUnitLower === 'lt')) {
+        unitCost = realPrice * 1000;
+    }
+
+    return unitCost * qtyNum;
+};
 
 const Dashboard = () => {
     const [ingredients, setIngredients] = useState([]);
     const [subRecipes, setSubRecipes] = useState([]);
     const [recipes, setRecipes] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const savedIngredients = localStorage.getItem('ingredients');
-        const savedSubRecipes = localStorage.getItem('subRecipes');
-        const savedRecipes = localStorage.getItem('recipes');
+        const fetchData = async () => {
+            try {
+                const [ingRes, subRes, recipeRes] = await Promise.all([
+                    api.get('/ingredients'),
+                    api.get('/subrecipes'),
+                    api.get('/recipes')
+                ]);
 
-        if (savedIngredients) setIngredients(JSON.parse(savedIngredients));
-        if (savedSubRecipes) setSubRecipes(JSON.parse(savedSubRecipes));
-        if (savedRecipes) setRecipes(JSON.parse(savedRecipes));
+                // Process ingredients
+                const ingredientsData = ingRes.data.map(i => ({
+                    ...i,
+                    id: i._id,
+                    price: Number(i.cost) || 0
+                }));
+                setIngredients(ingredientsData);
+
+                // Create ingredients map for cost calculation
+                const ingredientsMap = new Map(ingredientsData.map(i => [i.id, i]));
+
+                // Process sub-recipes and calculate their costs
+                const subRecipesData = subRes.data.map(sub => {
+                    let totalCost = 0;
+
+                    if (sub.items && sub.items.length > 0) {
+                        totalCost = sub.items.reduce((acc, itemWrapper) => {
+                            const itemObj = itemWrapper.item;
+                            if (!itemObj) return acc;
+
+                            const itemId = itemObj._id || itemObj.id;
+                            const mappedItem = ingredientsMap.get(itemId) || itemObj;
+                            const price = Number(mappedItem.price || mappedItem.cost || 0);
+                            const yieldPercent = Number(mappedItem.yield || itemObj.yield || 100);
+
+                            const cost = calculateItemCost(
+                                price,
+                                yieldPercent,
+                                itemObj.unit,
+                                itemObj.unit,
+                                itemWrapper.quantity
+                            );
+
+                            return acc + cost;
+                        }, 0);
+                    }
+
+                    return {
+                        ...sub,
+                        id: sub._id,
+                        cost: totalCost,
+                        unitCost: totalCost / (sub.yield || 1)
+                    };
+                });
+                setSubRecipes(subRecipesData);
+
+                // Create subrecipes map for recipe cost calculation
+                const subRecipesMap = new Map(subRecipesData.map(s => [s.id, s]));
+
+                // Process recipes and calculate their costs
+                const recipesData = recipeRes.data.map(recipe => {
+                    let totalCost = 0;
+
+                    if (recipe.items && recipe.items.length > 0) {
+                        totalCost = recipe.items.reduce((acc, itemWrapper) => {
+                            const itemObj = itemWrapper.item;
+                            if (!itemObj) return acc;
+
+                            const itemId = itemObj._id || itemObj.id;
+                            const isSubRecipe = itemWrapper.itemModel === 'SubRecipe';
+
+                            let price = 0;
+                            let yieldPercent = 100;
+
+                            if (isSubRecipe) {
+                                // Get sub-recipe cost per unit
+                                const subRecipe = subRecipesMap.get(itemId);
+                                price = subRecipe ? subRecipe.unitCost : 0;
+                                yieldPercent = 100; // Sub-recipes always 100% yield
+                            } else {
+                                // Get ingredient
+                                const ingredient = ingredientsMap.get(itemId) || itemObj;
+                                price = Number(ingredient.price || ingredient.cost || 0);
+                                yieldPercent = Number(ingredient.yield || itemObj.yield || 100);
+                            }
+
+                            const cost = calculateItemCost(
+                                price,
+                                yieldPercent,
+                                itemObj.unit,
+                                itemObj.unit,
+                                itemWrapper.quantity
+                            );
+
+                            return acc + cost;
+                        }, 0);
+                    }
+
+                    const costPerPortion = totalCost / (recipe.quantity || 1);
+                    const suggestedPrice = costPerPortion * (recipe.utilityFactor || 1);
+
+                    return {
+                        ...recipe,
+                        id: recipe._id,
+                        totalCost,
+                        costPerPortion,
+                        suggestedPrice,
+                        sellingPrice: recipe.suggestedPrice || suggestedPrice
+                    };
+                });
+                setRecipes(recipesData);
+
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, []);
 
     // Statistics
@@ -27,6 +165,14 @@ const Dashboard = () => {
             return acc + margin;
         }, 0) / recipes.length
         : 0;
+
+    if (loading) {
+        return (
+            <div className="animate-fade-in" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+                <p style={{ color: 'var(--text-secondary)' }}>Cargando datos...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="animate-fade-in">
@@ -106,7 +252,7 @@ const Dashboard = () => {
                                         <td className={styles.td}>${(sub.cost || 0).toFixed(2)}</td>
                                         <td className={styles.td}>{sub.yield} {sub.unit}</td>
                                         <td className={styles.td} style={{ color: 'var(--success)', fontWeight: 'bold' }}>
-                                            ${((sub.cost || 0) / (parseFloat(sub.yield) || 1)).toFixed(2)}/{sub.unit}
+                                            ${(sub.unitCost || 0).toFixed(2)}/{sub.unit}
                                         </td>
                                     </tr>
                                 ))}
@@ -174,3 +320,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+

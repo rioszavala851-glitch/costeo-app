@@ -1,6 +1,11 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const mongoSanitize = require('./middleware/mongoSanitize');
+const xss = require('xss-clean');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 
 // Load env vars
@@ -11,9 +16,36 @@ connectDB();
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Security Middleware
+app.use(helmet());
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+});
+app.use('/api', limiter);
+
+// Logging
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
+
+// Strict CORS
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production'
+        ? process.env.FRONTEND_URL // Set this in .env for production
+        : ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204
+};
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Data Sanitization
+app.use(mongoSanitize());
+app.use(xss());
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));

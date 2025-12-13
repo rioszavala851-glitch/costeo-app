@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Search, Filter, ChefHat, X, Save, Trash2, ArrowRight, Pencil } from 'lucide-react';
+import { Plus, Search, Filter, ChefHat, X, Save, Trash2, Pencil } from 'lucide-react';
+import api from '../api';
 import styles from './SubRecipes.module.css';
 
 /**
  * Calcula el costo real de un ingrediente basado en su precio, rendimiento y cantidad.
- * Fórmula:
- * 1. Precio Real = Precio / (Rendimiento / 100)
- * 2. Convertir a la unidad de uso (gr/ml si el precio está en kg/lt)
- * 3. Costo Total = Costo Unitario * Cantidad
  */
 const calculateIngredientCost = (price, yieldPercent, priceUnit, useUnit, quantity) => {
     const priceNum = Number(price) || 0;
@@ -41,10 +38,7 @@ const calculateIngredientCost = (price, yieldPercent, priceUnit, useUnit, quanti
 };
 
 const SubRecipes = () => {
-    const [subRecipes, setSubRecipes] = useState(() => {
-        const saved = localStorage.getItem('subRecipes');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [subRecipes, setSubRecipes] = useState([]);
     const { user } = useAuth();
     const canEdit = user?.role !== 'viewer';
     const [isAdding, setIsAdding] = useState(false);
@@ -56,86 +50,117 @@ const SubRecipes = () => {
 
     const [editingId, setEditingId] = useState(null);
 
-    // Dynamic Ingredients from LocalStorage + Mock Fallback
-    const [availableIngredients, setAvailableIngredients] = useState([]);
+    // Available items (Ingredients + SubRecipes)
+    const [availableItems, setAvailableItems] = useState([]);
 
-    useEffect(() => {
-        const savedIngredients = localStorage.getItem('ingredients');
-        if (savedIngredients) {
-            // Incluir yield de cada ingrediente
-            setAvailableIngredients(JSON.parse(savedIngredients).map(i => ({
-                ...i,
-                price: Number(i.price) || 0,
-                yield: Number(i.yield) || 100
-            })));
-        } else {
-            // Fallback mock if nothing in local storage
-            setAvailableIngredients([
-                { id: 1, name: 'Tomate', price: 25.50, unit: 'kg', yield: 95 },
-                { id: 2, name: 'Cebolla', price: 15.00, unit: 'kg', yield: 90 },
-                { id: 3, name: 'Ajo', price: 80.00, unit: 'kg', yield: 100 },
+    const fetchData = async () => {
+        try {
+            const [ingRes, subRes] = await Promise.all([
+                api.get('/ingredients'),
+                api.get('/subrecipes')
             ]);
+
+            const ingredientsData = ingRes.data.map(i => ({
+                ...i,
+                id: i._id,
+                price: Number(i.cost) || 0,
+                type: 'ingredient'
+            }));
+
+            // Pre-process subrecipes to calculate their costs recursively or simply
+            const subrecipesData = subRes.data.map(s => ({
+                ...s,
+                id: s._id,
+                price: 0, // Should be calculated
+                type: 'subrecipe'
+            }));
+
+            // Helper to resolve pricing for subrecipes
+            const itemMap = new Map([...ingredientsData.map(i => [i.id, i]), ...subrecipesData.map(s => [s.id, s])]);
+
+            // Need to calculate cost for subrecipes to be useful as items
+            subrecipesData.forEach(sub => {
+                let subCost = 0;
+                if (sub.items && sub.items.length > 0) {
+                    subCost = sub.items.reduce((acc, item) => {
+                        const itemObj = item.item;
+                        if (!itemObj) return acc;
+
+                        const mappedItem = itemMap.get(itemObj._id);
+                        const price = mappedItem ? mappedItem.price : (Number(itemObj.cost) || 0);
+
+                        const costData = calculateIngredientCost(
+                            price,
+                            mappedItem?.yield || itemObj.yield || 100,
+                            mappedItem?.unit || itemObj.unit,
+                            itemObj.unit,
+                            item.quantity
+                        );
+                        return acc + costData.totalCost;
+                    }, 0);
+                }
+                sub.price = subCost / (sub.yield || 1); // Price per unit
+                sub.cost = subCost; // Total cost
+
+                // Update map
+                itemMap.set(sub.id, sub);
+            });
+
+            setAvailableItems([...ingredientsData, ...subrecipesData]);
+            setSubRecipes(subrecipesData);
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
         }
-    }, [isAdding]); // Refresh when opening form
-
-    useEffect(() => {
-        localStorage.setItem('subRecipes', JSON.stringify(subRecipes));
-    }, [subRecipes]);
-
-    const loadTestData = () => {
-        // Need basic ingredients first to make sense
-        const mockSub = {
-            id: Date.now(),
-            name: 'Salsa de Tomate Base',
-            unit: 'lt',
-            yield: 90,
-            cost: 135.50,
-            ingredients: [
-                { id: 1, name: 'Tomate', price: 25.50, unit: 'kg', yield: 95, quantity: 5 },
-                { id: 2, name: 'Cebolla', price: 15.00, unit: 'kg', yield: 90, quantity: 0.5 },
-                { id: 3, name: 'Ajo', price: 80.00, unit: 'kg', yield: 100, quantity: 0.1 }
-            ],
-            isActive: true
-        };
-        setSubRecipes([mockSub]);
     };
 
-    // Calculate total cost usando la fórmula de costeo real
+    useEffect(() => {
+        fetchData();
+    }, [isAdding]);
+
+    // Calculate total cost
     const totalCost = selectedIngredients.reduce((acc, ing) => {
         const costData = calculateIngredientCost(
             ing.price,
             ing.yield || 100,
-            ing.priceUnit || ing.unit,  // Unidad del precio
-            ing.useUnit || ing.unit,     // Unidad de uso
+            ing.priceUnit || ing.unit,
+            ing.useUnit || ing.unit,
             ing.quantity
         );
         return acc + costData.totalCost;
     }, 0);
 
-    const handleAddIngredient = (ing) => {
-        // Prevent duplicates
-        if (selectedIngredients.some(i => i.id === ing.id)) {
-            alert("Este ingrediente ya está en la lista.");
+    const handleAddIngredient = (item) => {
+        // Prevent adding itself
+        if (editingId && item.id === editingId) {
+            alert("No puedes agregar la sub-receta a sí misma.");
             return;
         }
 
-        // Determinar la unidad de uso sugerida
-        let suggestedUnit = ing.unit;
-        if (ing.unit === 'kg') suggestedUnit = 'gr';
-        if (ing.unit === 'lt') suggestedUnit = 'ml';
+        // Prevent duplicates
+        if (selectedIngredients.some(i => i.id === item.id)) {
+            alert("Este insumo ya está en la lista.");
+            return;
+        }
 
-        const quantity = prompt(`Ingrese la cantidad de ${ing.name} (en ${suggestedUnit}): `);
+        let suggestedUnit = item.unit;
+        if (item.unit === 'kg') suggestedUnit = 'gr';
+        if (item.unit === 'lt') suggestedUnit = 'ml';
+
+        const quantity = prompt(`Ingrese la cantidad de ${item.name} (en ${suggestedUnit}): `);
         if (quantity && !isNaN(quantity)) {
             setSelectedIngredients([
                 ...selectedIngredients,
                 {
-                    ...ing,
+                    ...item,
                     quantity: parseFloat(quantity),
-                    priceUnit: ing.unit,  // Unidad original del precio
-                    useUnit: suggestedUnit // Unidad de uso en la receta
+                    priceUnit: item.unit,
+                    useUnit: suggestedUnit,
+                    // Preserve type for backend saving
+                    type: item.type
                 }
             ]);
-            setSearchTerm(''); // Clear search after adding
+            setSearchTerm('');
         }
     };
 
@@ -144,40 +169,94 @@ const SubRecipes = () => {
     };
 
     const handleEditSubRecipe = (sub) => {
-        setNewSubRecipe({ name: sub.name, unit: sub.unit, yield: sub.yield, cost: sub.cost });
-        setSelectedIngredients(sub.ingredients);
+        setNewSubRecipe({
+            name: sub.name,
+            unit: sub.unit,
+            yield: sub.yield,
+            cost: sub.cost
+        });
+
+        // Map backend items to frontend selectedIngredients
+        const ingredients = sub.items.map(i => {
+            const baseItem = i.item; // Populated object
+            if (!baseItem) return null;
+
+            // We need price/yield from baseItem or availableItems
+            const freshItem = availableItems.find(ai => ai.id === baseItem._id) || baseItem;
+
+            return {
+                ...freshItem,
+                id: baseItem._id,
+                name: baseItem.name,
+                unit: baseItem.unit,
+                price: Number(freshItem.price || baseItem.cost || 0),
+                yield: Number(freshItem.yield || baseItem.yield || 100),
+                quantity: i.quantity, // Usage quantity
+                useUnit: baseItem.unit,
+                type: i.itemModel === 'Ingredient' ? 'ingredient' : 'subrecipe'
+            };
+        }).filter(Boolean);
+
+        setSelectedIngredients(ingredients);
         setEditingId(sub.id);
         setIsAdding(true);
     };
 
-    const handleSaveSubRecipe = (e) => {
+    const handleSaveSubRecipe = async (e) => {
         e.preventDefault();
 
-        const subRecipeData = {
-            ...newSubRecipe,
-            ingredients: selectedIngredients,
-            cost: totalCost,
-            isActive: true
+        // Format items for backend
+        const itemsPayload = selectedIngredients.map(ing => ({
+            item: ing.id,
+            itemModel: ing.type === 'ingredient' ? 'Ingredient' : 'SubRecipe',
+            quantity: ing.quantity
+        }));
+
+        const payload = {
+            name: newSubRecipe.name,
+            unit: newSubRecipe.unit,
+            yield: parseFloat(newSubRecipe.yield),
+            items: itemsPayload
         };
 
-        if (editingId) {
-            setSubRecipes(subRecipes.map(sub => sub.id === editingId ? { ...subRecipeData, id: editingId } : sub));
-            alert("Sub-receta actualizada correctamente");
-        } else {
-            setSubRecipes([...subRecipes, { ...subRecipeData, id: Date.now() }]);
-            alert("Sub-receta creada correctamente");
-        }
+        try {
+            if (editingId) {
+                await api.put(`/subrecipes/${editingId}`, payload);
+                alert("Sub-receta actualizada correctamente");
+            } else {
+                await api.post('/subrecipes', payload);
+                alert("Sub-receta creada correctamente");
+            }
+            fetchData(); // Refresh list
 
-        // Reset Form
-        setIsAdding(false);
-        setEditingId(null);
-        setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 });
-        setSelectedIngredients([]);
-        setSearchTerm('');
+            // Reset Form (Wait for fetch to finish ideally, but this is fine)
+            setIsAdding(false);
+            setEditingId(null);
+            setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 });
+            setSelectedIngredients([]);
+            setSearchTerm('');
+
+        } catch (error) {
+            console.error("Error saving subrecipe:", error);
+            alert("Error al guardar la sub-receta");
+        }
     };
 
-    const filteredIngredients = availableIngredients.filter(ing =>
-        ing.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const handleDelete = async (id) => {
+        if (window.confirm("¿Estás seguro de que deseas eliminar esta sub-receta?")) {
+            try {
+                await api.delete(`/subrecipes/${id}`);
+                fetchData();
+            } catch (error) {
+                console.error("Error deleting:", error);
+                alert("Error al eliminar");
+            }
+        }
+    };
+
+    const filteredItems = availableItems.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        item.id !== editingId // Exclude self
     );
 
     return (
@@ -195,7 +274,7 @@ const SubRecipes = () => {
 
                 {canEdit && (
                     <div className={styles.actions}>
-                        <button onClick={() => setIsAdding(true)} className={styles.btnPrimary}>
+                        <button onClick={() => { setIsAdding(true); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); }} className={styles.btnPrimary}>
                             <Plus size={20} />
                             Agregar Sub-receta
                         </button>
@@ -203,11 +282,11 @@ const SubRecipes = () => {
                 )}
             </header>
 
-            {/* Formulario Agregar (Hidden by default) */}
+            {/* Formulario Agregar */}
             {isAdding && (
                 <div className={styles.card}>
                     <div className={styles.header} style={{ marginBottom: '1rem' }}>
-                        <h3 className={styles.title} style={{ fontSize: '1.25rem', color: 'var(--accent-color)' }}>Nueva Sub-receta</h3>
+                        <h3 className={styles.title} style={{ fontSize: '1.25rem', color: 'var(--accent-color)' }}>{editingId ? 'Editar Sub-receta' : 'Nueva Sub-receta'}</h3>
                         <button onClick={() => { setIsAdding(false); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); setSearchTerm(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
                     </div>
 
@@ -254,185 +333,196 @@ const SubRecipes = () => {
 
                         {/* Ingredients Selection Section */}
                         <div style={{ padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius)', border: '1px solid var(--glass-border)', marginBottom: '1.5rem' }}>
-                            <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-primary)' }}>Ingredientes de la Receta</h4>
+                            <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-primary)' }}>Ingredientes y Sub-recetas</h4>
 
                             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                                 <div style={{ position: 'relative', flex: 1 }}>
                                     <Search size={18} className={styles.label} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
                                     <input
                                         type="text"
-                                        placeholder="Buscar ingredientes (ej. Tomate, Cebolla)..."
+                                        placeholder="Buscar ingredientes o sub-recetas..."
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
                                         className={styles.input}
                                         style={{ paddingLeft: '2.5rem' }}
                                     />
                                     {searchTerm && (
-                                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)', zIndex: 10, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-                                            {filteredIngredients.map(ing => (
+                                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
+                                            {filteredItems.map(item => (
                                                 <div
-                                                    key={ing.id}
-                                                    onClick={() => handleAddIngredient(ing)}
+                                                    key={item.id}
+                                                    onClick={() => handleAddIngredient(item)}
                                                     style={{ padding: '0.75rem', cursor: 'pointer', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', color: 'var(--text-primary)' }}
                                                 >
-                                                    <span>{ing.name}</span>
-                                                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>${ing.price}/{ing.unit}</span>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        {item.type === 'subrecipe' && <ChefHat size={14} color="var(--accent-color)" />}
+                                                        {item.name}
+                                                    </span>
+                                                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>${Number(item.price).toFixed(2)}/{item.unit}</span>
                                                 </div>
                                             ))}
-                                            {filteredIngredients.length === 0 && <div style={{ padding: '0.75rem', color: 'var(--text-secondary)' }}>No se encontraron ingredientes.</div>}
+                                            {filteredItems.length === 0 && <div style={{ padding: '0.75rem', color: 'var(--text-secondary)' }}>No se encontraron resultados.</div>}
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Selected Ingredients List */}
+                            {/* Selected Items List */}
                             {selectedIngredients.length > 0 ? (
-                                <div className={styles.tableContainer}>
-                                    <table className={styles.table} style={{ fontSize: '0.85rem', minWidth: '600px' }}>
-                                        <thead>
-                                            <tr>
-                                                <th className={styles.th}>Ingrediente</th>
-                                                <th className={styles.th} style={{ textAlign: 'center' }}>Cant.</th>
-                                                <th className={styles.th} style={{ textAlign: 'center' }}>U.M.</th>
-                                                <th className={styles.th} style={{ textAlign: 'center' }}>Rend.</th>
-                                                <th className={styles.th} style={{ textAlign: 'right' }}>Precio</th>
-                                                <th className={styles.th} style={{ textAlign: 'right' }}>P. Real</th>
-                                                <th className={styles.th} style={{ textAlign: 'right' }}>Costo Unit.</th>
-                                                <th className={styles.th} style={{ textAlign: 'right' }}>Costo</th>
-                                                <th className={styles.th}></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {selectedIngredients.map(ing => {
-                                                const costData = calculateIngredientCost(
-                                                    ing.price,
-                                                    ing.yield || 100,
-                                                    ing.priceUnit || ing.unit,  // Unidad del precio
-                                                    ing.useUnit || ing.unit,     // Unidad de uso
-                                                    ing.quantity
-                                                );
-                                                return (
-                                                    <tr key={ing.id}>
-                                                        <td className={styles.td}>{ing.name}</td>
-                                                        <td className={styles.td} style={{ textAlign: 'center' }}>{ing.quantity}</td>
-                                                        <td className={styles.td} style={{ textAlign: 'center' }}>{ing.useUnit || ing.unit}</td>
-                                                        <td className={styles.td} style={{ textAlign: 'center' }}>{ing.yield || 100}%</td>
-                                                        <td className={styles.td} style={{ textAlign: 'right' }}>${Number(ing.price).toFixed(2)}</td>
-                                                        <td className={styles.td} style={{ textAlign: 'right', color: 'var(--warning)' }}>${costData.realPrice.toFixed(2)}</td>
-                                                        <td className={styles.td} style={{ textAlign: 'right' }}>${costData.unitCost.toFixed(4)}</td>
-                                                        <td className={styles.td} style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--success)' }}>${costData.totalCost.toFixed(2)}</td>
-                                                        <td className={styles.td} style={{ textAlign: 'right' }}>
-                                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => {
-                                                                        const newQty = prompt("Nueva cantidad:", ing.quantity);
-                                                                        if (newQty && !isNaN(newQty)) {
-                                                                            setSelectedIngredients(selectedIngredients.map(i =>
-                                                                                i.id === ing.id ? { ...i, quantity: parseFloat(newQty) } : i
-                                                                            ));
-                                                                        }
-                                                                    }}
-                                                                    className={styles.actionBtn}
-                                                                    title="Modificar Cantidad"
-                                                                >
-                                                                    <Pencil size={16} />
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleRemoveIngredient(ing.id)}
-                                                                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                                                                    title="Eliminar Ingrediente"
-                                                                >
-                                                                    <Trash2 size={16} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                            <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
-                                                <td colSpan="7" style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>Costo Total Sub-receta:</td>
-                                                <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--success)', fontSize: '1rem' }}>${totalCost.toFixed(2)}</td>
-                                                <td></td>
-                                            </tr>
-                                            <tr style={{ borderTop: '1px dashed var(--glass-border)' }}>
-                                                <td colSpan="7" style={{ padding: '0.5rem 0.75rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                                    Costo por {newSubRecipe.unit}:
-                                                </td>
-                                                <td style={{ padding: '0.5rem 0.75rem', fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '0.9rem' }}>
-                                                    ${(newSubRecipe.yield > 0 ? (totalCost / parseFloat(newSubRecipe.yield || 1)) : 0).toFixed(2)}
-                                                </td>
-                                                <td></td>
-                                            </tr>
-                                            {(newSubRecipe.unit === 'lt' || newSubRecipe.unit === 'kg') && (
+                                <>
+                                    <div className={styles.tableContainer}>
+                                        <table className={styles.table} style={{ fontSize: '0.85rem', minWidth: '600px' }}>
+                                            <thead>
                                                 <tr>
-                                                    <td colSpan="7" style={{ padding: '0.5rem 0.75rem', textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                                        Costo por {newSubRecipe.unit === 'lt' ? 'ml' : 'gr'}:
-                                                    </td>
-                                                    <td style={{ padding: '0.5rem 0.75rem', fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '0.9rem' }}>
-                                                        ${(newSubRecipe.yield > 0 ? (totalCost / parseFloat(newSubRecipe.yield || 1) / 1000) : 0).toFixed(4)}
-                                                    </td>
+                                                    <th className={styles.th}>Insumo</th>
+                                                    <th className={styles.th} style={{ textAlign: 'center' }}>Cant.</th>
+                                                    <th className={styles.th} style={{ textAlign: 'center' }}>U.M.</th>
+                                                    <th className={styles.th} style={{ textAlign: 'center' }}>Rend.</th>
+                                                    <th className={styles.th} style={{ textAlign: 'right' }}>Precio</th>
+                                                    <th className={styles.th} style={{ textAlign: 'right' }}>P. Real</th>
+                                                    <th className={styles.th} style={{ textAlign: 'right' }}>Costo</th>
+                                                    <th className={styles.th}></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {selectedIngredients.map(ing => {
+                                                    const costData = calculateIngredientCost(
+                                                        ing.price,
+                                                        ing.yield || 100,
+                                                        ing.priceUnit || ing.unit,
+                                                        ing.useUnit || ing.unit,
+                                                        ing.quantity
+                                                    );
+                                                    return (
+                                                        <tr key={ing.id}>
+                                                            <td className={styles.td}>
+                                                                {ing.type === 'subrecipe' && <ChefHat size={12} style={{ marginRight: 4 }} />}
+                                                                {ing.name}
+                                                            </td>
+                                                            <td className={styles.td} style={{ textAlign: 'center' }}>{ing.quantity}</td>
+                                                            <td className={styles.td} style={{ textAlign: 'center' }}>{ing.useUnit || ing.unit}</td>
+                                                            <td className={styles.td} style={{ textAlign: 'center' }}>{ing.yield || 100}%</td>
+                                                            <td className={styles.td} style={{ textAlign: 'right' }}>${Number(ing.price).toFixed(2)}</td>
+                                                            <td className={styles.td} style={{ textAlign: 'right', color: 'var(--warning)' }}>${costData.realPrice.toFixed(2)}</td>
+                                                            <td className={styles.td} style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--success)' }}>${costData.totalCost.toFixed(2)}</td>
+                                                            <td className={styles.td} style={{ textAlign: 'right' }}>
+                                                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const newQty = prompt("Nueva cantidad:", ing.quantity);
+                                                                            if (newQty && !isNaN(newQty)) {
+                                                                                setSelectedIngredients(selectedIngredients.map(i =>
+                                                                                    i.id === ing.id ? { ...i, quantity: parseFloat(newQty) } : i
+                                                                                ));
+                                                                            }
+                                                                        }}
+                                                                        className={styles.actionBtn}
+                                                                        title="Modificar Cantidad"
+                                                                    >
+                                                                        <Pencil size={16} />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveIngredient(ing.id)}
+                                                                        className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                                                                    >
+                                                                        <Trash2 size={16} />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                                <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
+                                                    <td colSpan="6" style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>Costo Total:</td>
+                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--success)', fontSize: '1rem', textAlign: 'right' }}>${totalCost.toFixed(2)}</td>
                                                     <td></td>
                                                 </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Resumen de Costos por Unidad */}
+                                    <div style={{
+                                        marginTop: '1.5rem',
+                                        padding: '1.25rem',
+                                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1))',
+                                        borderRadius: 'var(--radius)',
+                                        border: '1px solid var(--glass-border)'
+                                    }}>
+                                        <h4 style={{ margin: '0 0 1rem 0', color: 'var(--accent-color)', fontSize: '1rem' }}>
+                                            📊 Resumen de Costos por Unidad
+                                        </h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                                            {/* Precio por Unidad Principal (lt o kg) */}
+                                            <div style={{
+                                                padding: '1rem',
+                                                background: 'var(--bg-card)',
+                                                borderRadius: 'var(--radius)',
+                                                textAlign: 'center',
+                                                border: '1px solid var(--glass-border)'
+                                            }}>
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                                                    Precio por {newSubRecipe.unit === 'lt' ? 'Litro' : newSubRecipe.unit === 'kg' ? 'Kilogramo' : 'Pieza'}
+                                                </div>
+                                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--success)' }}>
+                                                    ${(totalCost / (parseFloat(newSubRecipe.yield) || 1)).toFixed(2)}
+                                                </div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                                                    / {newSubRecipe.unit}
+                                                </div>
+                                            </div>
+
+                                            {/* Precio por Unidad Pequeña (ml o gr) - Solo para lt y kg */}
+                                            {(newSubRecipe.unit === 'lt' || newSubRecipe.unit === 'kg') && (
+                                                <div style={{
+                                                    padding: '1rem',
+                                                    background: 'var(--bg-card)',
+                                                    borderRadius: 'var(--radius)',
+                                                    textAlign: 'center',
+                                                    border: '1px solid var(--glass-border)'
+                                                }}>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                                                        Precio por {newSubRecipe.unit === 'lt' ? 'Mililitro' : 'Gramo'}
+                                                    </div>
+                                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>
+                                                        ${((totalCost / (parseFloat(newSubRecipe.yield) || 1)) / 1000).toFixed(4)}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                                                        / {newSubRecipe.unit === 'lt' ? 'ml' : 'gr'}
+                                                    </div>
+                                                </div>
                                             )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
-                                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem', fontStyle: 'italic' }}>No hay ingredientes agregados aún.</p>
+                                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>No hay insumos agregados.</p>
                             )}
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
                             <button type="submit" className={styles.btnPrimary} style={{ background: 'var(--success)' }}>
-                                <Save size={18} /> Crear Sub-receta
+                                <Save size={18} /> Guardar Sub-receta
                             </button>
                         </div>
                     </form>
                 </div>
             )}
 
-            {/* Filtros y Búsqueda */}
-            <div className={styles.toolbar}>
-                <div className={styles.searchContainer}>
-                    <Search size={20} className={styles.searchIcon} />
-                    <input
-                        type="text"
-                        placeholder="Buscar sub-receta..."
-                        className={styles.searchInput}
-                    />
-                </div>
-                <button className={styles.btnSecondary} style={{ width: 'auto' }}>
-                    <Filter size={20} />
-                    Filtros
-                </button>
-            </div>
-
-            {/* Empty State / List */}
+            {/* Lista de Sub-recetas */}
             <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
                 {subRecipes.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                        <div style={{ background: 'var(--bg-primary)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
-                            <ChefHat size={40} color="var(--text-secondary)" style={{ opacity: 0.5 }} />
-                        </div>
-                        <h3 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>No has creado sub-recetas</h3>
-                        <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', margin: '0 auto 2rem auto', lineHeight: '1.5' }}>
-                            Las sub-recetas te ayudan a estandarizar producciones intermedias (salsas, masas). Agrégalas para usarlas despues en tus platillos.
-                        </p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-                            {canEdit && (
-                                <>
-                                    <button onClick={() => setIsAdding(true)} className={styles.btnPrimary} style={{ background: 'var(--bg-primary)', border: '1px solid var(--accent-color)', color: 'var(--accent-color)' }}>
-                                        Crear mi primera sub-receta
-                                    </button>
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>o</span>
-                                    <button onClick={loadTestData} style={{ background: 'transparent', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.9rem' }}>
-                                        🔄 Cargar sub-receta de ejemplo
-                                    </button>
-                                </>
-                            )}
-                        </div>
+                        <ChefHat size={40} color="var(--text-secondary)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+                        <h3 style={{ color: 'var(--text-primary)' }}>No has creado sub-recetas</h3>
+                        <p style={{ color: 'var(--text-secondary)' }}>Aún no hay preparaciones registradas.</p>
+                        {canEdit && (
+                            <button onClick={() => { setIsAdding(true); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); }} className={styles.btnPrimary} style={{ marginTop: '1rem' }}>
+                                Crear mi primera sub-receta
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className={styles.tableContainer}>
@@ -442,42 +532,64 @@ const SubRecipes = () => {
                                     <th className={styles.th}>Nombre</th>
                                     <th className={styles.th}>Unidad</th>
                                     <th className={styles.th}>Costo Total</th>
+                                    <th className={styles.th}>Precio/Unidad</th>
+                                    <th className={styles.th}>Precio/ml o gr</th>
                                     {canEdit && <th className={styles.th} style={{ textAlign: 'right' }}>Acciones</th>}
                                 </tr>
                             </thead>
                             <tbody>
-                                {subRecipes.map((sub) => (
-                                    <tr key={sub.id}>
-                                        <td className={styles.td} style={{ fontWeight: 'bold' }}>
-                                            {sub.name}
-                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>
-                                                {sub.ingredients.length} ingredientes
-                                            </div>
-                                        </td>
-                                        <td className={styles.td}>{sub.unit}</td>
-                                        <td className={styles.td} style={{ fontWeight: 'bold', color: 'var(--success)' }}>${sub.cost.toFixed(2)}</td>
-                                        {canEdit && (
-                                            <td className={styles.td}>
-                                                <div className={styles.actionsCell} style={{ justifyContent: 'flex-end' }}>
-                                                    <button
-                                                        onClick={() => handleEditSubRecipe(sub)}
-                                                        className={styles.actionBtn}
-                                                        title="Editar Sub-receta"
-                                                    >
-                                                        <Pencil size={18} />
-                                                    </button>
-                                                    <button onClick={() => {
-                                                        if (window.confirm("Borrar subreceta?")) {
-                                                            setSubRecipes(subRecipes.filter(s => s.id !== sub.id));
-                                                        }
-                                                    }} className={`${styles.actionBtn} ${styles.deleteBtn}`}>
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                {subRecipes.map((sub) => {
+                                    const pricePerUnit = sub.cost / (sub.yield || 1);
+                                    const pricePerSmallUnit = pricePerUnit / 1000;
+                                    return (
+                                        <tr key={sub.id}>
+                                            <td className={styles.td} style={{ fontWeight: 'bold' }}>
+                                                {sub.name}
+                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>
+                                                    {sub.items?.length || 0} insumos • Rend: {sub.yield} {sub.unit}
                                                 </div>
                                             </td>
-                                        )}
-                                    </tr>
-                                ))}
+                                            <td className={styles.td}>
+                                                <span style={{
+                                                    background: 'rgba(59, 130, 246, 0.1)',
+                                                    color: 'var(--accent-color)',
+                                                    padding: '0.25rem 0.75rem',
+                                                    borderRadius: '2rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 'bold',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {sub.unit}
+                                                </span>
+                                            </td>
+                                            <td className={styles.td} style={{ fontWeight: 'bold', color: 'var(--success)' }}>
+                                                ${Number(sub.cost).toFixed(2)}
+                                            </td>
+                                            <td className={styles.td} style={{ fontWeight: 'bold', color: 'var(--accent-color)' }}>
+                                                ${pricePerUnit.toFixed(2)}/{sub.unit}
+                                            </td>
+                                            <td className={styles.td} style={{ color: 'var(--text-secondary)' }}>
+                                                {(sub.unit === 'lt' || sub.unit === 'kg') ? (
+                                                    <span>${pricePerSmallUnit.toFixed(4)}/{sub.unit === 'lt' ? 'ml' : 'gr'}</span>
+                                                ) : (
+                                                    <span>-</span>
+                                                )}
+                                            </td>
+                                            {canEdit && (
+                                                <td className={styles.td}>
+                                                    <div className={styles.actionsCell} style={{ justifyContent: 'flex-end' }}>
+                                                        <button onClick={() => handleEditSubRecipe(sub)} className={styles.actionBtn}>
+                                                            <Pencil size={18} />
+                                                        </button>
+                                                        <button onClick={() => handleDelete(sub.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`}>
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -488,3 +600,4 @@ const SubRecipes = () => {
 };
 
 export default SubRecipes;
+
