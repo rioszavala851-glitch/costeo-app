@@ -51,10 +51,10 @@ router.post('/login', loginValidation, async (req, res) => {
                 email: user.email,
                 role: user.role,
                 name: user.name,
-                plan: user.plan || 'free'
+                planType: user.planType || 'free'
             },
-            process.env.JWT_SECRET || 'your-secret-key',
-            { expiresIn: '7d' }
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
         );
 
         // Save active session token for single-device enforcement (free users)
