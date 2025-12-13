@@ -255,258 +255,260 @@ const Ingredients = () => {
     }, [ingredients]);
 
     return (
-        <div className="animate-fade-in">
-            <header className={styles.header}>
-                <div className={styles.titleSection}>
-                    <div className={styles.iconBox}>
-                        <FileSpreadsheet size={28} color="white" />
+        <div className={styles.container}>
+            <div className="animate-fade-in">
+                <header className={styles.header}>
+                    <div className={styles.titleSection}>
+                        <div className={styles.iconBox}>
+                            <FileSpreadsheet size={28} color="white" />
+                        </div>
+                        <div>
+                            <h1 className={styles.title}>Ingredientes</h1>
+                            <p className={styles.subtitle}>Gestiona tus insumos base y sus costos</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className={styles.title}>Ingredientes</h1>
-                        <p className={styles.subtitle}>Gestiona tus insumos base y sus costos</p>
-                    </div>
-                </div>
 
-                <div className={styles.actions}>
-                    {/* Botón Descargar Plantilla */}
-                    <button onClick={handleDownloadTemplate} className={styles.btnSecondary}>
-                        <Download size={18} />
-                        Plantilla
-                    </button>
-
-                    {/* Botón Importar Excel - Only if canEdit */}
-                    {canEdit && (
-                        <label className={styles.btnPrimary} style={{ background: 'var(--success)' }}>
-                            <FileSpreadsheet size={18} />
-                            Importar Excel
-                            <input type="file" onChange={handleFileUpload} accept=".csv, .xlsx, .xls" style={{ display: 'none' }} />
-                        </label>
-                    )}
-
-                    {/* Botón Agregar Manual - Only if canEdit */}
-                    {canEdit && (
-                        <button onClick={() => setIsAdding(true)} className={styles.btnPrimary}>
-                            <Plus size={18} />
-                            Agregar Manual
+                    <div className={styles.actions}>
+                        {/* Botón Descargar Plantilla */}
+                        <button onClick={handleDownloadTemplate} className={styles.btnSecondary}>
+                            <Download size={18} />
+                            Plantilla
                         </button>
-                    )}
-                </div>
-            </header>
 
-            {/* Formulario Agregar Manual */}
-            {isAdding && (
-                <div className={styles.card}>
-                    <div className={styles.header} style={{ marginBottom: '1rem' }}>
-                        <h3 className={styles.title} style={{ fontSize: '1.25rem', color: 'var(--accent-color)' }}>
-                            {editingId ? 'Editar Ingrediente' : 'Nuevo Ingrediente'}
-                        </h3>
-                        <button onClick={() => { setIsAdding(false); setEditingId(null); setNewIngredient({ name: '', price: '', unit: 'kg', yield: 100, category: 'general' }); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
-                    </div>
-                    <form onSubmit={handleSaveManual}>
-                        <div className={styles.formGrid}>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Nombre</label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={newIngredient.name}
-                                    onChange={e => setNewIngredient({ ...newIngredient, name: e.target.value })}
-                                    className={styles.input}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Costo ($)</label>
-                                <input
-                                    required
-                                    type="number"
-                                    value={newIngredient.price}
-                                    onChange={e => setNewIngredient({ ...newIngredient, price: e.target.value })}
-                                    className={styles.input}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Unidad</label>
-                                <select
-                                    value={newIngredient.unit}
-                                    onChange={e => setNewIngredient({ ...newIngredient, unit: e.target.value })}
-                                    className={styles.select}
-                                >
-                                    <option value="kg">Kilogramo (kg)</option>
-                                    <option value="lt">Litro (lt)</option>
-                                    <option value="pz">Pieza (pz)</option>
-                                    <option value="gr">Gramo (gr)</option>
-                                </select>
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Rendimiento (%)</label>
-                                <input
-                                    type="number"
-                                    value={newIngredient.yield}
-                                    onChange={e => setNewIngredient({ ...newIngredient, yield: e.target.value })}
-                                    className={styles.input}
-                                />
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button type="submit" className={styles.btnPrimary} style={{ background: 'var(--success)' }}>
-                                <Save size={18} /> Guardar
+                        {/* Botón Importar Excel - Only if canEdit */}
+                        {canEdit && (
+                            <label className={styles.btnPrimary} style={{ background: 'var(--success)' }}>
+                                <FileSpreadsheet size={18} />
+                                Importar Excel
+                                <input type="file" onChange={handleFileUpload} accept=".csv, .xlsx, .xls" style={{ display: 'none' }} />
+                            </label>
+                        )}
+
+                        {/* Botón Agregar Manual - Only if canEdit */}
+                        {canEdit && (
+                            <button onClick={() => setIsAdding(true)} className={styles.btnPrimary}>
+                                <Plus size={18} />
+                                Agregar Manual
                             </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            {/* Filtros y Búsqueda */}
-            <div className={styles.toolbar}>
-                <div className={styles.searchContainer}>
-                    <Search size={20} className={styles.searchIcon} />
-                    <input
-                        type="text"
-                        placeholder="Buscar ingrediente..."
-                        className={styles.searchInput}
-                    />
-                </div>
-                <button className={styles.btnSecondary} style={{ width: 'auto' }}>
-                    <Filter size={20} />
-                    Filtros
-                </button>
-            </div>
-
-            {/* Lista de Ingredientes */}
-            <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
-                {ingredients.length === 0 ? (
-                    <div key="empty-state" style={{ textAlign: 'center', padding: '3rem' }}>
-                        <Search size={48} color="var(--text-secondary)" style={{ marginBottom: '1rem', opacity: 0.3 }} />
-                        <p style={{ color: 'var(--text-secondary)' }}>No hay ingredientes registrados aún.</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-                            <button onClick={() => setIsAdding(true)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 'bold' }}>
-                                Agregar mi primer ingrediente
-                            </button>
-                        </div>
+                        )}
                     </div>
-                ) : (
-                    <div className={styles.tableContainer}>
-                        <table className={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th className={styles.th}>Nombre</th>
-                                    <th className={styles.th}>Costo</th>
-                                    <th className={styles.th}>Unidad</th>
-                                    <th className={styles.th}>Rendimiento</th>
-                                    {canEdit && <th className={styles.th} style={{ textAlign: 'right' }}>Acciones</th>}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {ingredients.map((ing) => (
-                                    <tr key={ing.id}>
-                                        <td className={styles.td}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                {ing.name}
-                                                {ing.isActive === false && <span style={{ fontSize: '0.7rem', background: 'var(--danger)', color: 'white', padding: '0.1rem 0.5rem', borderRadius: '1rem' }}>Inactivo</span>}
-                                            </div>
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>{ing.category || 'General'}</div>
-                                        </td>
-                                        <td className={styles.td}>
-                                            <strong>${Number(ing.price).toFixed(2)}</strong>
-                                        </td>
-                                        <td className={styles.td}>
-                                            <span style={{
-                                                background: 'rgba(59, 130, 246, 0.1)',
-                                                color: 'var(--accent-color)',
-                                                padding: '0.25rem 0.75rem',
-                                                borderRadius: '2rem',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 'bold',
-                                                textTransform: 'uppercase'
-                                            }}>
-                                                {ing.unit}
-                                            </span>
-                                        </td>
-                                        <td className={styles.td}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <div style={{ flex: 1, height: '6px', background: 'var(--bg-primary)', borderRadius: '3px', width: '80px', overflow: 'hidden' }}>
-                                                    <div style={{ width: `${ing.yield}%`, height: '100%', background: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}></div>
-                                                </div>
-                                                <span style={{ fontSize: '0.85rem', color: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}>{ing.yield}%</span>
-                                            </div>
-                                        </td>
-                                        {canEdit && (
-                                            <td className={styles.td}>
-                                                <div className={styles.actionsCell}>
-                                                    <button onClick={() => handleEditIngredient(ing)} className={styles.actionBtn} title="Editar Detalles">
-                                                        <Pencil size={18} />
-                                                    </button>
-                                                    <button onClick={() => handleUpdatePrice(ing.id, ing.price)} className={styles.actionBtn} style={{ color: 'var(--success)', background: 'rgba(16, 185, 129, 0.1)' }} title="Modificar Precio">
-                                                        <DollarSign size={18} />
-                                                    </button>
-                                                    <button onClick={() => handleToggleActive(ing.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`} title={ing.isActive !== false ? "Inhabilitar" : "Habilitar"}>
-                                                        {ing.isActive !== false ? <Ban size={18} /> : <CheckCircle size={18} />}
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        )}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                </header>
+
+                {/* Formulario Agregar Manual */}
+                {isAdding && (
+                    <div className={styles.card}>
+                        <div className={styles.header} style={{ marginBottom: '1rem' }}>
+                            <h3 className={styles.title} style={{ fontSize: '1.25rem', color: 'var(--accent-color)' }}>
+                                {editingId ? 'Editar Ingrediente' : 'Nuevo Ingrediente'}
+                            </h3>
+                            <button onClick={() => { setIsAdding(false); setEditingId(null); setNewIngredient({ name: '', price: '', unit: 'kg', yield: 100, category: 'general' }); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+                        </div>
+                        <form onSubmit={handleSaveManual}>
+                            <div className={styles.formGrid}>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Nombre</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newIngredient.name}
+                                        onChange={e => setNewIngredient({ ...newIngredient, name: e.target.value })}
+                                        className={styles.input}
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Costo ($)</label>
+                                    <input
+                                        required
+                                        type="number"
+                                        value={newIngredient.price}
+                                        onChange={e => setNewIngredient({ ...newIngredient, price: e.target.value })}
+                                        className={styles.input}
+                                    />
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Unidad</label>
+                                    <select
+                                        value={newIngredient.unit}
+                                        onChange={e => setNewIngredient({ ...newIngredient, unit: e.target.value })}
+                                        className={styles.select}
+                                    >
+                                        <option value="kg">Kilogramo (kg)</option>
+                                        <option value="lt">Litro (lt)</option>
+                                        <option value="pz">Pieza (pz)</option>
+                                        <option value="gr">Gramo (gr)</option>
+                                    </select>
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Rendimiento (%)</label>
+                                    <input
+                                        type="number"
+                                        value={newIngredient.yield}
+                                        onChange={e => setNewIngredient({ ...newIngredient, yield: e.target.value })}
+                                        className={styles.input}
+                                    />
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <button type="submit" className={styles.btnPrimary} style={{ background: 'var(--success)' }}>
+                                    <Save size={18} /> Guardar
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 )}
-            </div>
 
-            {/* Sub-recipes Reference Section */}
-            {subRecipes.length > 0 && (
-                <div style={{ marginTop: '3rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                        <div className={styles.iconBox} style={{ boxShadow: 'none', background: 'rgba(59, 130, 246, 0.1)' }}>
-                            <ChefHat size={24} color="var(--accent-color)" />
-                        </div>
-                        <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-primary)' }}>Costos de Sub-recetas</h2>
+                {/* Filtros y Búsqueda */}
+                <div className={styles.toolbar}>
+                    <div className={styles.searchContainer}>
+                        <Search size={20} className={styles.searchIcon} />
+                        <input
+                            type="text"
+                            placeholder="Buscar ingrediente..."
+                            className={styles.searchInput}
+                        />
                     </div>
+                    <button className={styles.btnSecondary} style={{ width: 'auto' }}>
+                        <Filter size={20} />
+                        Filtros
+                    </button>
+                </div>
 
-                    <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
+                {/* Lista de Ingredientes */}
+                <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
+                    {ingredients.length === 0 ? (
+                        <div key="empty-state" style={{ textAlign: 'center', padding: '3rem' }}>
+                            <Search size={48} color="var(--text-secondary)" style={{ marginBottom: '1rem', opacity: 0.3 }} />
+                            <p style={{ color: 'var(--text-secondary)' }}>No hay ingredientes registrados aún.</p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                                <button onClick={() => setIsAdding(true)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 'bold' }}>
+                                    Agregar mi primer ingrediente
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
                         <div className={styles.tableContainer}>
                             <table className={styles.table}>
                                 <thead>
                                     <tr>
                                         <th className={styles.th}>Nombre</th>
-                                        <th className={styles.th}>Costo Unitario (Est.)</th>
+                                        <th className={styles.th}>Costo</th>
                                         <th className={styles.th}>Unidad</th>
-                                        <th className={styles.th} style={{ textAlign: 'right' }}>Info</th>
+                                        <th className={styles.th}>Rendimiento</th>
+                                        {canEdit && <th className={styles.th} style={{ textAlign: 'right' }}>Acciones</th>}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {subRecipes.map(sub => {
-                                        const recalculatedCost = recalculateSubRecipeCost(sub, ingredientsMap);
-                                        const unitCost = recalculatedCost / (parseFloat(sub.yield) || 1);
-                                        return (
-                                            <tr key={sub.id}>
-                                                <td className={styles.td} style={{ fontWeight: '500' }}>{sub.name}</td>
-                                                <td className={styles.td} style={{ fontWeight: 'bold' }}>${unitCost.toFixed(2)}</td>
+                                    {ingredients.map((ing) => (
+                                        <tr key={ing.id}>
+                                            <td className={styles.td}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    {ing.name}
+                                                    {ing.isActive === false && <span style={{ fontSize: '0.7rem', background: 'var(--danger)', color: 'white', padding: '0.1rem 0.5rem', borderRadius: '1rem' }}>Inactivo</span>}
+                                                </div>
+                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>{ing.category || 'General'}</div>
+                                            </td>
+                                            <td className={styles.td}>
+                                                <strong>${Number(ing.price).toFixed(2)}</strong>
+                                            </td>
+                                            <td className={styles.td}>
+                                                <span style={{
+                                                    background: 'rgba(59, 130, 246, 0.1)',
+                                                    color: 'var(--accent-color)',
+                                                    padding: '0.25rem 0.75rem',
+                                                    borderRadius: '2rem',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 'bold',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {ing.unit}
+                                                </span>
+                                            </td>
+                                            <td className={styles.td}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                    <div style={{ flex: 1, height: '6px', background: 'var(--bg-primary)', borderRadius: '3px', width: '80px', overflow: 'hidden' }}>
+                                                        <div style={{ width: `${ing.yield}%`, height: '100%', background: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}></div>
+                                                    </div>
+                                                    <span style={{ fontSize: '0.85rem', color: ing.yield < 80 ? 'var(--warning)' : 'var(--success)' }}>{ing.yield}%</span>
+                                                </div>
+                                            </td>
+                                            {canEdit && (
                                                 <td className={styles.td}>
-                                                    <span style={{
-                                                        background: 'rgba(59, 130, 246, 0.1)',
-                                                        color: 'var(--accent-color)',
-                                                        padding: '0.25rem 0.75rem',
-                                                        borderRadius: '2rem',
-                                                        fontSize: '0.75rem',
-                                                        fontWeight: 'bold',
-                                                        textTransform: 'uppercase'
-                                                    }}>
-                                                        {sub.unit}
-                                                    </span>
+                                                    <div className={styles.actionsCell}>
+                                                        <button onClick={() => handleEditIngredient(ing)} className={styles.actionBtn} title="Editar Detalles">
+                                                            <Pencil size={18} />
+                                                        </button>
+                                                        <button onClick={() => handleUpdatePrice(ing.id, ing.price)} className={styles.actionBtn} style={{ color: 'var(--success)', background: 'rgba(16, 185, 129, 0.1)' }} title="Modificar Precio">
+                                                            <DollarSign size={18} />
+                                                        </button>
+                                                        <button onClick={() => handleToggleActive(ing.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`} title={ing.isActive !== false ? "Inhabilitar" : "Habilitar"}>
+                                                            {ing.isActive !== false ? <Ban size={18} /> : <CheckCircle size={18} />}
+                                                        </button>
+                                                    </div>
                                                 </td>
-                                                <td className={styles.td} style={{ textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-                                                    Calculado en Sub-recetas
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
+                                            )}
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    )}
                 </div>
-            )}
+
+                {/* Sub-recipes Reference Section */}
+                {subRecipes.length > 0 && (
+                    <div style={{ marginTop: '3rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                            <div className={styles.iconBox} style={{ boxShadow: 'none', background: 'rgba(59, 130, 246, 0.1)' }}>
+                                <ChefHat size={24} color="var(--accent-color)" />
+                            </div>
+                            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-primary)' }}>Costos de Sub-recetas</h2>
+                        </div>
+
+                        <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
+                            <div className={styles.tableContainer}>
+                                <table className={styles.table}>
+                                    <thead>
+                                        <tr>
+                                            <th className={styles.th}>Nombre</th>
+                                            <th className={styles.th}>Costo Unitario (Est.)</th>
+                                            <th className={styles.th}>Unidad</th>
+                                            <th className={styles.th} style={{ textAlign: 'right' }}>Info</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {subRecipes.map(sub => {
+                                            const recalculatedCost = recalculateSubRecipeCost(sub, ingredientsMap);
+                                            const unitCost = recalculatedCost / (parseFloat(sub.yield) || 1);
+                                            return (
+                                                <tr key={sub.id}>
+                                                    <td className={styles.td} style={{ fontWeight: '500' }}>{sub.name}</td>
+                                                    <td className={styles.td} style={{ fontWeight: 'bold' }}>${unitCost.toFixed(2)}</td>
+                                                    <td className={styles.td}>
+                                                        <span style={{
+                                                            background: 'rgba(59, 130, 246, 0.1)',
+                                                            color: 'var(--accent-color)',
+                                                            padding: '0.25rem 0.75rem',
+                                                            borderRadius: '2rem',
+                                                            fontSize: '0.75rem',
+                                                            fontWeight: 'bold',
+                                                            textTransform: 'uppercase'
+                                                        }}>
+                                                            {sub.unit}
+                                                        </span>
+                                                    </td>
+                                                    <td className={styles.td} style={{ textAlign: 'right', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                                        Calculado en Sub-recetas
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

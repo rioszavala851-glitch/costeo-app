@@ -260,222 +260,203 @@ const SubRecipes = () => {
     );
 
     return (
-        <div className="animate-fade-in">
-            <header className={styles.header}>
-                <div className={styles.titleSection}>
-                    <div className={styles.iconBox}>
-                        <ChefHat size={28} color="white" />
-                    </div>
-                    <div>
-                        <h1 className={styles.title}>Sub-recetas</h1>
-                        <p className={styles.subtitle}>Preparaciones base para tus platillos</p>
-                    </div>
-                </div>
-
-                {canEdit && (
-                    <div className={styles.actions}>
-                        <button onClick={() => { setIsAdding(true); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); }} className={styles.btnPrimary}>
-                            <Plus size={20} />
-                            Agregar Sub-receta
-                        </button>
-                    </div>
-                )}
-            </header>
-
-            {/* Formulario Agregar */}
-            {isAdding && (
-                <div className={styles.card}>
-                    <div className={styles.header} style={{ marginBottom: '1rem' }}>
-                        <h3 className={styles.title} style={{ fontSize: '1.25rem', color: 'var(--accent-color)' }}>{editingId ? 'Editar Sub-receta' : 'Nueva Sub-receta'}</h3>
-                        <button onClick={() => { setIsAdding(false); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); setSearchTerm(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
+        <div className={styles.container}>
+            <div className="animate-fade-in">
+                <header className={styles.header}>
+                    <div className={styles.titleSection}>
+                        <div className={styles.iconBox}>
+                            <ChefHat size={28} color="white" />
+                        </div>
+                        <div>
+                            <h1 className={styles.title}>Sub-recetas</h1>
+                            <p className={styles.subtitle}>Preparaciones base para tus platillos</p>
+                        </div>
                     </div>
 
-                    <form onSubmit={handleSaveSubRecipe}>
-                        <div className={styles.formGrid}>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Nombre de la preparación</label>
-                                <input
-                                    required
-                                    type="text"
-                                    value={newSubRecipe.name}
-                                    onChange={e => setNewSubRecipe({ ...newSubRecipe, name: e.target.value })}
-                                    placeholder="Ej. Salsa de Tomate Base"
-                                    className={styles.input}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Unidad Final</label>
-                                <select
-                                    value={newSubRecipe.unit}
-                                    onChange={e => setNewSubRecipe({ ...newSubRecipe, unit: e.target.value })}
-                                    className={styles.select}
-                                >
-                                    <option value="lt">Litros (lt)</option>
-                                    <option value="kg">Kilogramos (kg)</option>
-                                    <option value="pz">Piezas (pz)</option>
-                                </select>
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>
-                                    Cantidad Resultante ({newSubRecipe.unit})
-                                </label>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    value={newSubRecipe.yield}
-                                    onChange={e => setNewSubRecipe({ ...newSubRecipe, yield: e.target.value })}
-                                    placeholder="Ej. 1.5"
-                                    className={styles.input}
-                                />
-                            </div>
+                    {canEdit && (
+                        <div className={styles.actions}>
+                            <button onClick={() => { setIsAdding(true); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); }} className={styles.btnPrimary}>
+                                <Plus size={20} />
+                                Agregar Sub-receta
+                            </button>
+                        </div>
+                    )}
+                </header>
+
+                {/* Formulario Agregar */}
+                {isAdding && (
+                    <div className={styles.card}>
+                        <div className={styles.header} style={{ marginBottom: '1rem' }}>
+                            <h3 className={styles.title} style={{ fontSize: '1.25rem', color: 'var(--accent-color)' }}>{editingId ? 'Editar Sub-receta' : 'Nueva Sub-receta'}</h3>
+                            <button onClick={() => { setIsAdding(false); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); setSearchTerm(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20} /></button>
                         </div>
 
-                        {/* Ingredients Selection Section */}
-                        <div style={{ padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius)', border: '1px solid var(--glass-border)', marginBottom: '1.5rem' }}>
-                            <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-primary)' }}>Ingredientes y Sub-recetas</h4>
-
-                            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
-                                <div style={{ position: 'relative', flex: 1 }}>
-                                    <Search size={18} className={styles.label} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                        <form onSubmit={handleSaveSubRecipe}>
+                            <div className={styles.formGrid}>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Nombre de la preparación</label>
                                     <input
+                                        required
                                         type="text"
-                                        placeholder="Buscar ingredientes o sub-recetas..."
-                                        value={searchTerm}
-                                        onChange={e => setSearchTerm(e.target.value)}
+                                        value={newSubRecipe.name}
+                                        onChange={e => setNewSubRecipe({ ...newSubRecipe, name: e.target.value })}
+                                        placeholder="Ej. Salsa de Tomate Base"
                                         className={styles.input}
-                                        style={{ paddingLeft: '2.5rem' }}
                                     />
-                                    {searchTerm && (
-                                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
-                                            {filteredItems.map(item => (
-                                                <div
-                                                    key={item.id}
-                                                    onClick={() => handleAddIngredient(item)}
-                                                    style={{ padding: '0.75rem', cursor: 'pointer', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', color: 'var(--text-primary)' }}
-                                                >
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        {item.type === 'subrecipe' && <ChefHat size={14} color="var(--accent-color)" />}
-                                                        {item.name}
-                                                    </span>
-                                                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>${Number(item.price).toFixed(2)}/{item.unit}</span>
-                                                </div>
-                                            ))}
-                                            {filteredItems.length === 0 && <div style={{ padding: '0.75rem', color: 'var(--text-secondary)' }}>No se encontraron resultados.</div>}
-                                        </div>
-                                    )}
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Unidad Final</label>
+                                    <select
+                                        value={newSubRecipe.unit}
+                                        onChange={e => setNewSubRecipe({ ...newSubRecipe, unit: e.target.value })}
+                                        className={styles.select}
+                                    >
+                                        <option value="lt">Litros (lt)</option>
+                                        <option value="kg">Kilogramos (kg)</option>
+                                        <option value="pz">Piezas (pz)</option>
+                                    </select>
+                                </div>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>
+                                        Cantidad Resultante ({newSubRecipe.unit})
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={newSubRecipe.yield}
+                                        onChange={e => setNewSubRecipe({ ...newSubRecipe, yield: e.target.value })}
+                                        placeholder="Ej. 1.5"
+                                        className={styles.input}
+                                    />
                                 </div>
                             </div>
 
-                            {/* Selected Items List */}
-                            {selectedIngredients.length > 0 ? (
-                                <>
-                                    <div className={styles.tableContainer}>
-                                        <table className={styles.table} style={{ fontSize: '0.85rem', minWidth: '600px' }}>
-                                            <thead>
-                                                <tr>
-                                                    <th className={styles.th}>Insumo</th>
-                                                    <th className={styles.th} style={{ textAlign: 'center' }}>Cant.</th>
-                                                    <th className={styles.th} style={{ textAlign: 'center' }}>U.M.</th>
-                                                    <th className={styles.th} style={{ textAlign: 'center' }}>Rend.</th>
-                                                    <th className={styles.th} style={{ textAlign: 'right' }}>Precio</th>
-                                                    <th className={styles.th} style={{ textAlign: 'right' }}>P. Real</th>
-                                                    <th className={styles.th} style={{ textAlign: 'right' }}>Costo</th>
-                                                    <th className={styles.th}></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {selectedIngredients.map(ing => {
-                                                    const costData = calculateIngredientCost(
-                                                        ing.price,
-                                                        ing.yield || 100,
-                                                        ing.priceUnit || ing.unit,
-                                                        ing.useUnit || ing.unit,
-                                                        ing.quantity
-                                                    );
-                                                    return (
-                                                        <tr key={ing.id}>
-                                                            <td className={styles.td}>
-                                                                {ing.type === 'subrecipe' && <ChefHat size={12} style={{ marginRight: 4 }} />}
-                                                                {ing.name}
-                                                            </td>
-                                                            <td className={styles.td} style={{ textAlign: 'center' }}>{ing.quantity}</td>
-                                                            <td className={styles.td} style={{ textAlign: 'center' }}>{ing.useUnit || ing.unit}</td>
-                                                            <td className={styles.td} style={{ textAlign: 'center' }}>{ing.yield || 100}%</td>
-                                                            <td className={styles.td} style={{ textAlign: 'right' }}>${Number(ing.price).toFixed(2)}</td>
-                                                            <td className={styles.td} style={{ textAlign: 'right', color: 'var(--warning)' }}>${costData.realPrice.toFixed(2)}</td>
-                                                            <td className={styles.td} style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--success)' }}>${costData.totalCost.toFixed(2)}</td>
-                                                            <td className={styles.td} style={{ textAlign: 'right' }}>
-                                                                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => {
-                                                                            const newQty = prompt("Nueva cantidad:", ing.quantity);
-                                                                            if (newQty && !isNaN(newQty)) {
-                                                                                setSelectedIngredients(selectedIngredients.map(i =>
-                                                                                    i.id === ing.id ? { ...i, quantity: parseFloat(newQty) } : i
-                                                                                ));
-                                                                            }
-                                                                        }}
-                                                                        className={styles.actionBtn}
-                                                                        title="Modificar Cantidad"
-                                                                    >
-                                                                        <Pencil size={16} />
-                                                                    </button>
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => handleRemoveIngredient(ing.id)}
-                                                                        className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                                                                    >
-                                                                        <Trash2 size={16} />
-                                                                    </button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                                <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
-                                                    <td colSpan="6" style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>Costo Total:</td>
-                                                    <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--success)', fontSize: '1rem', textAlign: 'right' }}>${totalCost.toFixed(2)}</td>
-                                                    <td></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                            {/* Ingredients Selection Section */}
+                            <div style={{ padding: '1rem', background: 'var(--bg-primary)', borderRadius: 'var(--radius)', border: '1px solid var(--glass-border)', marginBottom: '1.5rem' }}>
+                                <h4 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-primary)' }}>Ingredientes y Sub-recetas</h4>
 
-                                    {/* Resumen de Costos por Unidad */}
-                                    <div style={{
-                                        marginTop: '1.5rem',
-                                        padding: '1.25rem',
-                                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1))',
-                                        borderRadius: 'var(--radius)',
-                                        border: '1px solid var(--glass-border)'
-                                    }}>
-                                        <h4 style={{ margin: '0 0 1rem 0', color: 'var(--accent-color)', fontSize: '1rem' }}>
-                                            📊 Resumen de Costos por Unidad
-                                        </h4>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                                            {/* Precio por Unidad Principal (lt o kg) */}
-                                            <div style={{
-                                                padding: '1rem',
-                                                background: 'var(--bg-card)',
-                                                borderRadius: 'var(--radius)',
-                                                textAlign: 'center',
-                                                border: '1px solid var(--glass-border)'
-                                            }}>
-                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                                                    Precio por {newSubRecipe.unit === 'lt' ? 'Litro' : newSubRecipe.unit === 'kg' ? 'Kilogramo' : 'Pieza'}
-                                                </div>
-                                                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--success)' }}>
-                                                    ${(totalCost / (parseFloat(newSubRecipe.yield) || 1)).toFixed(2)}
-                                                </div>
-                                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                                                    / {newSubRecipe.unit}
-                                                </div>
+                                <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                                    <div style={{ position: 'relative', flex: 1 }}>
+                                        <Search size={18} className={styles.label} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar ingredientes o sub-recetas..."
+                                            value={searchTerm}
+                                            onChange={e => setSearchTerm(e.target.value)}
+                                            className={styles.input}
+                                            style={{ paddingLeft: '2.5rem' }}
+                                        />
+                                        {searchTerm && (
+                                            <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius)', zIndex: 10, maxHeight: '200px', overflowY: 'auto' }}>
+                                                {filteredItems.map(item => (
+                                                    <div
+                                                        key={item.id}
+                                                        onClick={() => handleAddIngredient(item)}
+                                                        style={{ padding: '0.75rem', cursor: 'pointer', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', color: 'var(--text-primary)' }}
+                                                    >
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                            {item.type === 'subrecipe' && <ChefHat size={14} color="var(--accent-color)" />}
+                                                            {item.name}
+                                                        </span>
+                                                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>${Number(item.price).toFixed(2)}/{item.unit}</span>
+                                                    </div>
+                                                ))}
+                                                {filteredItems.length === 0 && <div style={{ padding: '0.75rem', color: 'var(--text-secondary)' }}>No se encontraron resultados.</div>}
                                             </div>
+                                        )}
+                                    </div>
+                                </div>
 
-                                            {/* Precio por Unidad Pequeña (ml o gr) - Solo para lt y kg */}
-                                            {(newSubRecipe.unit === 'lt' || newSubRecipe.unit === 'kg') && (
+                                {/* Selected Items List */}
+                                {selectedIngredients.length > 0 ? (
+                                    <>
+                                        <div className={styles.tableContainer}>
+                                            <table className={styles.table} style={{ fontSize: '0.85rem', minWidth: '600px' }}>
+                                                <thead>
+                                                    <tr>
+                                                        <th className={styles.th}>Insumo</th>
+                                                        <th className={styles.th} style={{ textAlign: 'center' }}>Cant.</th>
+                                                        <th className={styles.th} style={{ textAlign: 'center' }}>U.M.</th>
+                                                        <th className={styles.th} style={{ textAlign: 'center' }}>Rend.</th>
+                                                        <th className={styles.th} style={{ textAlign: 'right' }}>Precio</th>
+                                                        <th className={styles.th} style={{ textAlign: 'right' }}>P. Real</th>
+                                                        <th className={styles.th} style={{ textAlign: 'right' }}>Costo</th>
+                                                        <th className={styles.th}></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {selectedIngredients.map(ing => {
+                                                        const costData = calculateIngredientCost(
+                                                            ing.price,
+                                                            ing.yield || 100,
+                                                            ing.priceUnit || ing.unit,
+                                                            ing.useUnit || ing.unit,
+                                                            ing.quantity
+                                                        );
+                                                        return (
+                                                            <tr key={ing.id}>
+                                                                <td className={styles.td}>
+                                                                    {ing.type === 'subrecipe' && <ChefHat size={12} style={{ marginRight: 4 }} />}
+                                                                    {ing.name}
+                                                                </td>
+                                                                <td className={styles.td} style={{ textAlign: 'center' }}>{ing.quantity}</td>
+                                                                <td className={styles.td} style={{ textAlign: 'center' }}>{ing.useUnit || ing.unit}</td>
+                                                                <td className={styles.td} style={{ textAlign: 'center' }}>{ing.yield || 100}%</td>
+                                                                <td className={styles.td} style={{ textAlign: 'right' }}>${Number(ing.price).toFixed(2)}</td>
+                                                                <td className={styles.td} style={{ textAlign: 'right', color: 'var(--warning)' }}>${costData.realPrice.toFixed(2)}</td>
+                                                                <td className={styles.td} style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--success)' }}>${costData.totalCost.toFixed(2)}</td>
+                                                                <td className={styles.td} style={{ textAlign: 'right' }}>
+                                                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => {
+                                                                                const newQty = prompt("Nueva cantidad:", ing.quantity);
+                                                                                if (newQty && !isNaN(newQty)) {
+                                                                                    setSelectedIngredients(selectedIngredients.map(i =>
+                                                                                        i.id === ing.id ? { ...i, quantity: parseFloat(newQty) } : i
+                                                                                    ));
+                                                                                }
+                                                                            }}
+                                                                            className={styles.actionBtn}
+                                                                            title="Modificar Cantidad"
+                                                                        >
+                                                                            <Pencil size={16} />
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => handleRemoveIngredient(ing.id)}
+                                                                            className={`${styles.actionBtn} ${styles.deleteBtn}`}
+                                                                        >
+                                                                            <Trash2 size={16} />
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                    <tr style={{ background: 'rgba(255,255,255,0.05)' }}>
+                                                        <td colSpan="6" style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold' }}>Costo Total:</td>
+                                                        <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--success)', fontSize: '1rem', textAlign: 'right' }}>${totalCost.toFixed(2)}</td>
+                                                        <td></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Resumen de Costos por Unidad */}
+                                        <div style={{
+                                            marginTop: '1.5rem',
+                                            padding: '1.25rem',
+                                            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1))',
+                                            borderRadius: 'var(--radius)',
+                                            border: '1px solid var(--glass-border)'
+                                        }}>
+                                            <h4 style={{ margin: '0 0 1rem 0', color: 'var(--accent-color)', fontSize: '1rem' }}>
+                                                📊 Resumen de Costos por Unidad
+                                            </h4>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                                                {/* Precio por Unidad Principal (lt o kg) */}
                                                 <div style={{
                                                     padding: '1rem',
                                                     background: 'var(--bg-card)',
@@ -484,120 +465,140 @@ const SubRecipes = () => {
                                                     border: '1px solid var(--glass-border)'
                                                 }}>
                                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                                                        Precio por {newSubRecipe.unit === 'lt' ? 'Mililitro' : 'Gramo'}
+                                                        Precio por {newSubRecipe.unit === 'lt' ? 'Litro' : newSubRecipe.unit === 'kg' ? 'Kilogramo' : 'Pieza'}
                                                     </div>
-                                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>
-                                                        ${((totalCost / (parseFloat(newSubRecipe.yield) || 1)) / 1000).toFixed(4)}
+                                                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--success)' }}>
+                                                        ${(totalCost / (parseFloat(newSubRecipe.yield) || 1)).toFixed(2)}
                                                     </div>
                                                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                                                        / {newSubRecipe.unit === 'lt' ? 'ml' : 'gr'}
+                                                        / {newSubRecipe.unit}
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>No hay insumos agregados.</p>
-                            )}
-                        </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-                            <button type="submit" className={styles.btnPrimary} style={{ background: 'var(--success)' }}>
-                                <Save size={18} /> Guardar Sub-receta
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            {/* Lista de Sub-recetas */}
-            <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
-                {subRecipes.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                        <ChefHat size={40} color="var(--text-secondary)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
-                        <h3 style={{ color: 'var(--text-primary)' }}>No has creado sub-recetas</h3>
-                        <p style={{ color: 'var(--text-secondary)' }}>Aún no hay preparaciones registradas.</p>
-                        {canEdit && (
-                            <button onClick={() => { setIsAdding(true); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); }} className={styles.btnPrimary} style={{ marginTop: '1rem' }}>
-                                Crear mi primera sub-receta
-                            </button>
-                        )}
-                    </div>
-                ) : (
-                    <div className={styles.tableContainer}>
-                        <table className={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th className={styles.th}>Nombre</th>
-                                    <th className={styles.th}>Unidad</th>
-                                    <th className={styles.th}>Costo Total</th>
-                                    <th className={styles.th}>Precio/Unidad</th>
-                                    <th className={styles.th}>Precio/ml o gr</th>
-                                    {canEdit && <th className={styles.th} style={{ textAlign: 'right' }}>Acciones</th>}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {subRecipes.map((sub) => {
-                                    const pricePerUnit = sub.cost / (sub.yield || 1);
-                                    const pricePerSmallUnit = pricePerUnit / 1000;
-                                    return (
-                                        <tr key={sub.id}>
-                                            <td className={styles.td} style={{ fontWeight: 'bold' }}>
-                                                {sub.name}
-                                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>
-                                                    {sub.items?.length || 0} insumos • Rend: {sub.yield} {sub.unit}
-                                                </div>
-                                            </td>
-                                            <td className={styles.td}>
-                                                <span style={{
-                                                    background: 'rgba(59, 130, 246, 0.1)',
-                                                    color: 'var(--accent-color)',
-                                                    padding: '0.25rem 0.75rem',
-                                                    borderRadius: '2rem',
-                                                    fontSize: '0.75rem',
-                                                    fontWeight: 'bold',
-                                                    textTransform: 'uppercase'
-                                                }}>
-                                                    {sub.unit}
-                                                </span>
-                                            </td>
-                                            <td className={styles.td} style={{ fontWeight: 'bold', color: 'var(--success)' }}>
-                                                ${Number(sub.cost).toFixed(2)}
-                                            </td>
-                                            <td className={styles.td} style={{ fontWeight: 'bold', color: 'var(--accent-color)' }}>
-                                                ${pricePerUnit.toFixed(2)}/{sub.unit}
-                                            </td>
-                                            <td className={styles.td} style={{ color: 'var(--text-secondary)' }}>
-                                                {(sub.unit === 'lt' || sub.unit === 'kg') ? (
-                                                    <span>${pricePerSmallUnit.toFixed(4)}/{sub.unit === 'lt' ? 'ml' : 'gr'}</span>
-                                                ) : (
-                                                    <span>-</span>
+                                                {/* Precio por Unidad Pequeña (ml o gr) - Solo para lt y kg */}
+                                                {(newSubRecipe.unit === 'lt' || newSubRecipe.unit === 'kg') && (
+                                                    <div style={{
+                                                        padding: '1rem',
+                                                        background: 'var(--bg-card)',
+                                                        borderRadius: 'var(--radius)',
+                                                        textAlign: 'center',
+                                                        border: '1px solid var(--glass-border)'
+                                                    }}>
+                                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                                                            Precio por {newSubRecipe.unit === 'lt' ? 'Mililitro' : 'Gramo'}
+                                                        </div>
+                                                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-color)' }}>
+                                                            ${((totalCost / (parseFloat(newSubRecipe.yield) || 1)) / 1000).toFixed(4)}
+                                                        </div>
+                                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                                                            / {newSubRecipe.unit === 'lt' ? 'ml' : 'gr'}
+                                                        </div>
+                                                    </div>
                                                 )}
-                                            </td>
-                                            {canEdit && (
-                                                <td className={styles.td}>
-                                                    <div className={styles.actionsCell} style={{ justifyContent: 'flex-end' }}>
-                                                        <button onClick={() => handleEditSubRecipe(sub)} className={styles.actionBtn}>
-                                                            <Pencil size={18} />
-                                                        </button>
-                                                        <button onClick={() => handleDelete(sub.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`}>
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            )}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '1rem' }}>No hay insumos agregados.</p>
+                                )}
+                            </div>
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                                <button type="submit" className={styles.btnPrimary} style={{ background: 'var(--success)' }}>
+                                    <Save size={18} /> Guardar Sub-receta
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 )}
+
+                {/* Lista de Sub-recetas */}
+                <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
+                    {subRecipes.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '4rem 2rem' }}>
+                            <ChefHat size={40} color="var(--text-secondary)" style={{ opacity: 0.5, marginBottom: '1rem' }} />
+                            <h3 style={{ color: 'var(--text-primary)' }}>No has creado sub-recetas</h3>
+                            <p style={{ color: 'var(--text-secondary)' }}>Aún no hay preparaciones registradas.</p>
+                            {canEdit && (
+                                <button onClick={() => { setIsAdding(true); setEditingId(null); setNewSubRecipe({ name: '', unit: 'lt', yield: 1, cost: 0 }); setSelectedIngredients([]); }} className={styles.btnPrimary} style={{ marginTop: '1rem' }}>
+                                    Crear mi primera sub-receta
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <div className={styles.tableContainer}>
+                            <table className={styles.table}>
+                                <thead>
+                                    <tr>
+                                        <th className={styles.th}>Nombre</th>
+                                        <th className={styles.th}>Unidad</th>
+                                        <th className={styles.th}>Costo Total</th>
+                                        <th className={styles.th}>Precio/Unidad</th>
+                                        <th className={styles.th}>Precio/ml o gr</th>
+                                        {canEdit && <th className={styles.th} style={{ textAlign: 'right' }}>Acciones</th>}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {subRecipes.map((sub) => {
+                                        const pricePerUnit = sub.cost / (sub.yield || 1);
+                                        const pricePerSmallUnit = pricePerUnit / 1000;
+                                        return (
+                                            <tr key={sub.id}>
+                                                <td className={styles.td} style={{ fontWeight: 'bold' }}>
+                                                    {sub.name}
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>
+                                                        {sub.items?.length || 0} insumos • Rend: {sub.yield} {sub.unit}
+                                                    </div>
+                                                </td>
+                                                <td className={styles.td}>
+                                                    <span style={{
+                                                        background: 'rgba(59, 130, 246, 0.1)',
+                                                        color: 'var(--accent-color)',
+                                                        padding: '0.25rem 0.75rem',
+                                                        borderRadius: '2rem',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 'bold',
+                                                        textTransform: 'uppercase'
+                                                    }}>
+                                                        {sub.unit}
+                                                    </span>
+                                                </td>
+                                                <td className={styles.td} style={{ fontWeight: 'bold', color: 'var(--success)' }}>
+                                                    ${Number(sub.cost).toFixed(2)}
+                                                </td>
+                                                <td className={styles.td} style={{ fontWeight: 'bold', color: 'var(--accent-color)' }}>
+                                                    ${pricePerUnit.toFixed(2)}/{sub.unit}
+                                                </td>
+                                                <td className={styles.td} style={{ color: 'var(--text-secondary)' }}>
+                                                    {(sub.unit === 'lt' || sub.unit === 'kg') ? (
+                                                        <span>${pricePerSmallUnit.toFixed(4)}/{sub.unit === 'lt' ? 'ml' : 'gr'}</span>
+                                                    ) : (
+                                                        <span>-</span>
+                                                    )}
+                                                </td>
+                                                {canEdit && (
+                                                    <td className={styles.td}>
+                                                        <div className={styles.actionsCell} style={{ justifyContent: 'flex-end' }}>
+                                                            <button onClick={() => handleEditSubRecipe(sub)} className={styles.actionBtn}>
+                                                                <Pencil size={18} />
+                                                            </button>
+                                                            <button onClick={() => handleDelete(sub.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`}>
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
 };
 
 export default SubRecipes;
-

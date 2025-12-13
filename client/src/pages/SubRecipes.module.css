@@ -1,4 +1,9 @@
 /* Estilos base (idénticos a Ingredients para consistencia) */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .header {
     display: flex;
     justify-content: space-between;

@@ -1,4 +1,9 @@
 /* Estilos base consistentes */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .header {
     display: flex;
     justify-content: space-between;
@@ -246,7 +251,7 @@
     bottom: 0;
     background: var(--bg-app);
     display: flex;
-    flexDirection: column;
+    flex-direction: column;
     z-index: 1000;
     overflow-y: auto;
 }
