@@ -3,6 +3,7 @@
  * Controls access to premium features and enforces limits
  */
 const Recipe = require('../models/Recipe');
+const logger = require('../utils/logger');
 
 // Plan limits configuration
 const PLAN_LIMITS = {
@@ -65,7 +66,7 @@ const checkRecipeLimit = async (req, res, next) => {
 
         // Validación de usuario
         if (!user || !user.id) {
-            console.error('[LIMIT_CHECK] ❌ No user found in request');
+            logger.security('Recipe limit check failed - no user', { source: 'checkRecipeLimit' });
             return res.status(401).json({
                 error: 'UNAUTHORIZED',
                 message: 'Usuario no autenticado'
@@ -77,18 +78,27 @@ const checkRecipeLimit = async (req, res, next) => {
 
         // ✅ Premium users: Sin límite
         if (userPlan === 'premium') {
-            console.log(`[LIMIT_CHECK] ✅ Usuario ${user.id} es Premium - Sin límite`);
+            logger.limit('Premium user - no limit', { userId: user.id, plan: userPlan });
             return next();
         }
 
         // 🔍 Contar recetas EN TIEMPO REAL (no confiar en cache para el candado)
         const cantidadActual = await Recipe.countDocuments({ createdBy: user.id });
 
-        console.log(`[LIMIT_CHECK] Usuario ${user.id} - Plan: ${userPlan} - Recetas: ${cantidadActual}/${planLimits.maxRecipes}`);
+        logger.limit('Recipe count check', {
+            userId: user.id,
+            plan: userPlan,
+            current: cantidadActual,
+            max: planLimits.maxRecipes
+        });
 
         // 🔒 VERIFICACIÓN DEL LÍMITE
         if (cantidadActual >= LIMITE_FREE) {
-            console.warn(`[LIMIT_CHECK] ⛔ BLOQUEADO: Usuario ${user.id} alcanzó límite (${cantidadActual}/${LIMITE_FREE})`);
+            logger.limit('User blocked - limit reached', {
+                userId: user.id,
+                current: cantidadActual,
+                limit: LIMITE_FREE
+            });
 
             return res.status(403).json({
                 error: 'LIMIT_REACHED',
@@ -101,7 +111,11 @@ const checkRecipeLimit = async (req, res, next) => {
         }
 
         // ✅ Pasa la validación - puede continuar
-        console.log(`[LIMIT_CHECK] ✅ Usuario ${user.id} puede crear receta (${cantidadActual + 1}/${LIMITE_FREE})`);
+        logger.limit('Recipe creation allowed', {
+            userId: user.id,
+            newCount: cantidadActual + 1,
+            limit: LIMITE_FREE
+        });
 
         // Agregar info del límite al request para el frontend
         req.recipeLimit = {
@@ -113,7 +127,7 @@ const checkRecipeLimit = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.error('[LIMIT_CHECK] ❌ Error checking recipe limit:', error);
+        logger.error('Error checking recipe limit', { error: error.message, stack: error.stack });
         // En caso de error, bloquear por seguridad
         return res.status(500).json({
             error: 'LIMIT_CHECK_ERROR',
@@ -167,7 +181,7 @@ const validateSession = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.error('Error validating session:', error);
+        logger.error('Error validating session', { error: error.message });
         next(error);
     }
 };

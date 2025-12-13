@@ -2,11 +2,11 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
-const morgan = require('morgan');
 const mongoSanitize = require('./middleware/mongoSanitize');
 const xssSanitize = require('./middleware/xssSanitize');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
+const logger = require('./utils/logger');
 
 // Load env vars
 dotenv.config();
@@ -40,10 +40,8 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// Logging
-if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'));
-}
+// Logging estructurado con Winston
+app.use(logger.requestMiddleware);
 
 // Strict CORS
 const corsOptions = {
@@ -73,7 +71,7 @@ app.use('/api/cloud-recipes', require('./routes/cloudRecipes'));
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
     const path = require('path');
-    console.log('Serving static files from:', path.join(__dirname, '../client/dist'));
+    logger.info('Serving static files', { path: path.join(__dirname, '../client/dist') });
     // Set static folder
     app.use(express.static(path.join(__dirname, '../client/dist')));
 
@@ -86,5 +84,9 @@ if (process.env.NODE_ENV === 'production') {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    logger.info('Server started', {
+        port: PORT,
+        environment: process.env.NODE_ENV || 'development',
+        nodeVersion: process.version
+    });
 });

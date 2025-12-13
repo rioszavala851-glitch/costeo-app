@@ -5,6 +5,7 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 const { getPlanStatus } = require('../middleware/planLimits');
+const logger = require('../utils/logger');
 
 // Validation rules for login
 const loginValidation = [
@@ -77,8 +78,10 @@ router.post('/login', loginValidation, async (req, res) => {
             },
             planStatus
         });
+
+        logger.auth('User logged in', { userId: user._id, email: user.email, role: user.role });
     } catch (err) {
-        console.error('Login error:', err);
+        logger.error('Login error', { error: err.message, stack: err.stack });
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -104,7 +107,7 @@ router.get('/plan-status', auth, async (req, res) => {
         }
         res.json(planStatus);
     } catch (err) {
-        console.error('Error getting plan status:', err);
+        logger.error('Error getting plan status', { error: err.message });
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -126,8 +129,9 @@ router.post('/logout', auth, async (req, res) => {
             await user.save();
         }
         res.json({ message: 'Logged out successfully' });
+        logger.auth('User logged out', { userId: req.user.id });
     } catch (err) {
-        console.error('Logout error:', err);
+        logger.error('Logout error', { error: err.message });
         res.status(500).json({ message: 'Server error' });
     }
 });

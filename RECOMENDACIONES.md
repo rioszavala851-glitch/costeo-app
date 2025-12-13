@@ -257,7 +257,7 @@ router.get('/', auth, async (req, res) => {
 | Seguridad API | ✅ Bueno | Helmet, rate limit, sanitize |
 | Validación | ✅ Bueno | express-validator implementado |
 | Tests | ❌ Faltante | Sin tests |
-| Logs | ⚠️ Básico | Solo console.log |
+| Logs | ✅ Completado | Winston implementado |
 | Frontend Premium | ✅ Bueno | UI bloqueada para freemium |
 
 ---
