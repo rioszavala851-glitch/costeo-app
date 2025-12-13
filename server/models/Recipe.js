@@ -48,6 +48,17 @@ const RecipeSchema = new mongoose.Schema({
     totalCost: { type: Number }, // Costo ingredientes
     realCost: { type: Number }, // Costo real (con merma/rendimiento)
     suggestedPrice: { type: Number },
+
+    // ========== USER ASSOCIATION FOR FREEMIUM LIMITS ==========
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }
 }, { timestamps: true });
+
+// Index for efficient user-based queries
+RecipeSchema.index({ createdBy: 1 });
+RecipeSchema.index({ createdBy: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Recipe', RecipeSchema);

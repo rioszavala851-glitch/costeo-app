@@ -235,6 +235,28 @@ const UserManagement = () => {
                                         )}
                                     </div>
                                     <div className={styles.userEmail}>{user.email}</div>
+                                    {/* Recipe count indicator */}
+                                    <div style={{
+                                        fontSize: '0.7rem',
+                                        color: user.recipePercentage >= 100 ? 'var(--danger)' : user.recipePercentage >= 80 ? 'var(--warning)' : 'var(--text-secondary)',
+                                        marginTop: '0.25rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem'
+                                    }}>
+                                        📊 Recetas: {user.recipeCount || 0} / {user.recipeLimit === Infinity ? '∞' : user.recipeLimit}
+                                        {user.recipePercentage >= 80 && user.plan !== 'premium' && (
+                                            <span style={{
+                                                background: user.recipePercentage >= 100 ? 'var(--danger)' : 'var(--warning)',
+                                                color: 'white',
+                                                padding: '0.1rem 0.3rem',
+                                                borderRadius: '0.2rem',
+                                                fontSize: '0.6rem'
+                                            }}>
+                                                {user.recipePercentage >= 100 ? 'LÍMITE' : `${user.recipePercentage}%`}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className={styles.userActions}>

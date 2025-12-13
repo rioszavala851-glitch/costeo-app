@@ -51,6 +51,7 @@ const getPlanLimits = (plan) => {
 
 /**
  * Check if user can create more recipes
+ * Counts recipes PER USER for proper freemium limits
  */
 const checkRecipeLimit = async (req, res, next) => {
     try {
@@ -62,9 +63,8 @@ const checkRecipeLimit = async (req, res, next) => {
             return next();
         }
 
-        // Count user's recipes (in a real multi-tenant app, recipes would be linked to user)
-        // For this app, we count all recipes since it's single-tenant per organization
-        const recipeCount = await Recipe.countDocuments();
+        // Count recipes created BY THIS USER specifically
+        const recipeCount = await Recipe.countDocuments({ createdBy: user.id });
 
         if (recipeCount >= planLimits.maxRecipes) {
             return res.status(403).json({
@@ -141,7 +141,7 @@ const validateSession = async (req, res, next) => {
 };
 
 /**
- * Get plan status for user
+ * Get plan status for user - counts recipes PER USER
  */
 const getPlanStatus = async (userId) => {
     const Recipe = require('../models/Recipe');
@@ -151,7 +151,9 @@ const getPlanStatus = async (userId) => {
     if (!user) return null;
 
     const planLimits = getPlanLimits(user.plan || 'free');
-    const recipeCount = await Recipe.countDocuments();
+
+    // Count recipes created BY THIS USER specifically
+    const recipeCount = await Recipe.countDocuments({ createdBy: userId });
 
     return {
         plan: user.plan || 'free',
@@ -174,11 +176,19 @@ const getPlanStatus = async (userId) => {
     };
 };
 
+/**
+ * Get recipe count for a specific user
+ */
+const getUserRecipeCount = async (userId) => {
+    return await Recipe.countDocuments({ createdBy: userId });
+};
+
 module.exports = {
     PLAN_LIMITS,
     getPlanLimits,
     checkRecipeLimit,
     checkFeatureAccess,
     validateSession,
-    getPlanStatus
+    getPlanStatus,
+    getUserRecipeCount
 };

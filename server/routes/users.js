@@ -1,17 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Recipe = require('../models/Recipe');
 const { auth, authorizeRole } = require('../middleware/auth');
+const { PLAN_LIMITS } = require('../middleware/planLimits');
 
 // Protect all routes: Only Admins can manage users
 router.use(auth, authorizeRole(['admin']));
 
 // @route   GET /api/users
-// @desc    Get all users
+// @desc    Get all users with their recipe counts
 router.get('/', async (req, res) => {
     try {
-        const users = await User.find().select('-password');
-        res.json(users);
+        const users = await User.find().select('-password').lean();
+
+        // Get recipe counts for each user
+        const usersWithCounts = await Promise.all(users.map(async (user) => {
+            const recipeCount = await Recipe.countDocuments({ createdBy: user._id });
+            const planLimits = PLAN_LIMITS[user.plan || 'free'];
+
+            return {
+                ...user,
+                recipeCount,
+                recipeLimit: planLimits.maxRecipes,
+                recipePercentage: planLimits.maxRecipes === Infinity
+                    ? 0
+                    : Math.round((recipeCount / planLimits.maxRecipes) * 100)
+            };
+        }));
+
+        res.json(usersWithCounts);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
