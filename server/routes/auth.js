@@ -1,19 +1,35 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 
+// Validation rules for login
+const loginValidation = [
+    body('email')
+        .trim()
+        .isEmail().withMessage('Please provide a valid email address')
+        .normalizeEmail(),
+    body('password')
+        .notEmpty().withMessage('Password is required')
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+];
+
 // @route   POST /api/auth/login
 // @desc    Login user and return token
-router.post('/login', async (req, res) => {
+router.post('/login', loginValidation, async (req, res) => {
     try {
-        const { email, password } = req.body;
-
-        // Validate input
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Please provide email and password' });
+        // Check for validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                message: 'Validation failed',
+                errors: errors.array()
+            });
         }
+
+        const { email, password } = req.body;
 
         // Check if user exists
         const user = await User.findOne({ email });

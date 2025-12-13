@@ -27,6 +27,14 @@ Aplicación web moderna para la gestión de recetas, ingredientes, sub-recetas y
 - JWT (JSON Web Tokens)
 - Bcryptjs
 
+### 🔒 Seguridad
+- **Helmet** - Headers HTTP seguros
+- **Rate Limiting** - Protección contra ataques de fuerza bruta
+- **CORS Estricto** - Solo orígenes autorizados
+- **XSS Clean** - Sanitización de entradas
+- **Mongo Sanitize** - Prevención de inyección NoSQL
+- **Express Validator** - Validación robusta de datos
+
 ## 📦 Instalación
 
 1. **Clonar el repositorio**
