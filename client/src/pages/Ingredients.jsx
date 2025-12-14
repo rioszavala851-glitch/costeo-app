@@ -392,8 +392,8 @@ const Ingredients = () => {
                                 <thead>
                                     <tr>
                                         <th className={styles.th}>Nombre</th>
-                                        <th className={styles.th}>Costo</th>
-                                        <th className={styles.th}>Unidad</th>
+                                        <th className={styles.th} style={{ textAlign: 'right' }}>Costo</th>
+                                        <th className={styles.th} style={{ textAlign: 'center' }}>Unidad</th>
                                         <th className={styles.th}>Rendimiento</th>
                                         {canEdit && <th className={styles.th} style={{ textAlign: 'right' }}>Acciones</th>}
                                     </tr>
@@ -408,18 +408,19 @@ const Ingredients = () => {
                                                 </div>
                                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>{ing.category || 'General'}</div>
                                             </td>
-                                            <td className={styles.td}>
-                                                <strong>${Number(ing.price).toFixed(2)}</strong>
+                                            <td className={styles.td} style={{ textAlign: 'right' }}>
+                                                <strong style={{ fontFamily: 'monospace', fontSize: '0.95rem' }}>${Number(ing.price).toFixed(2)}</strong>
                                             </td>
-                                            <td className={styles.td}>
+                                            <td className={styles.td} style={{ textAlign: 'center' }}>
                                                 <span style={{
-                                                    background: 'rgba(59, 130, 246, 0.1)',
-                                                    color: 'var(--accent-color)',
+                                                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.15))',
+                                                    color: '#60a5fa',
                                                     padding: '0.25rem 0.75rem',
                                                     borderRadius: '2rem',
                                                     fontSize: '0.75rem',
                                                     fontWeight: 'bold',
-                                                    textTransform: 'uppercase'
+                                                    textTransform: 'uppercase',
+                                                    border: '1px solid rgba(96, 165, 250, 0.3)'
                                                 }}>
                                                     {ing.unit}
                                                 </span>
@@ -435,10 +436,15 @@ const Ingredients = () => {
                                             {canEdit && (
                                                 <td className={styles.td}>
                                                     <div className={styles.actionsCell}>
-                                                        <button onClick={() => handleEditIngredient(ing)} className={styles.actionBtn} title="Editar Detalles">
+                                                        <button onClick={() => handleEditIngredient(ing)} className={styles.actionBtn} title="Editar todos los detalles">
                                                             <Pencil size={18} />
                                                         </button>
-                                                        <button onClick={() => handleUpdatePrice(ing.id, ing.price)} className={styles.actionBtn} style={{ color: 'var(--success)', background: 'rgba(16, 185, 129, 0.1)' }} title="Modificar Precio">
+                                                        <button
+                                                            onClick={() => handleUpdatePrice(ing.id, ing.price)}
+                                                            className={styles.actionBtn}
+                                                            style={{ color: 'var(--success)', background: 'rgba(16, 185, 129, 0.1)' }}
+                                                            title="💰 Actualizar precio rápido (solo costo)"
+                                                        >
                                                             <DollarSign size={18} />
                                                         </button>
                                                         <button onClick={() => handleToggleActive(ing.id)} className={`${styles.actionBtn} ${styles.deleteBtn}`} title={ing.isActive !== false ? "Inhabilitar" : "Habilitar"}>
