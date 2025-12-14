@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api';
-import { User, Trash2, Plus, Pencil, Save, X, Key, Crown } from 'lucide-react';
+import { User, Users, Trash2, Plus, Pencil, Save, X, Key, Crown } from 'lucide-react';
 import styles from '../../pages/Admin.module.css';
 
 const UserManagement = () => {
@@ -296,7 +296,16 @@ const UserManagement = () => {
                             </div>
                         </div>
                     ))}
-                    {users.length === 0 && <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>No hay usuarios registrados.</p>}
+                    {users.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '3rem' }}>
+                            <Users size={56} color="var(--accent-color)" style={{ marginBottom: '1rem', opacity: 0.4 }} />
+                            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>Sin usuarios registrados</h4>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>Agrega miembros a tu equipo para colaborar.</p>
+                            <button onClick={() => setIsAdding(true)} style={{ background: 'var(--accent-color)', border: 'none', color: 'white', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius)', cursor: 'pointer', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Plus size={18} /> Agregar primer usuario
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 

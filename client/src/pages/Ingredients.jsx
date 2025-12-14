@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, FileSpreadsheet, Search, Filter, Download, Save, X, DollarSign, Ban, CheckCircle, Pencil, ChefHat } from 'lucide-react';
+import { Plus, FileSpreadsheet, Search, Filter, Download, Save, X, DollarSign, Ban, CheckCircle, Pencil, ChefHat, Package } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import api from '../api';
 import styles from './Ingredients.module.css';
@@ -377,11 +377,12 @@ const Ingredients = () => {
                 <div className={styles.card} style={{ padding: 0, overflow: 'hidden' }}>
                     {ingredients.length === 0 ? (
                         <div key="empty-state" style={{ textAlign: 'center', padding: '3rem' }}>
-                            <Search size={48} color="var(--text-secondary)" style={{ marginBottom: '1rem', opacity: 0.3 }} />
-                            <p style={{ color: 'var(--text-secondary)' }}>No hay ingredientes registrados aún.</p>
+                            <Package size={56} color="var(--accent-color)" style={{ marginBottom: '1rem', opacity: 0.4 }} />
+                            <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>Tu inventario está vacío</h4>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Aún no has registrado ingredientes. ¡Empieza a llenar tu despensa!</p>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-                                <button onClick={() => setIsAdding(true)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', textDecoration: 'underline', fontWeight: 'bold' }}>
-                                    Agregar mi primer ingrediente
+                                <button onClick={() => setIsAdding(true)} style={{ background: 'var(--accent-color)', border: 'none', color: 'white', padding: '0.75rem 1.5rem', borderRadius: 'var(--radius)', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Plus size={18} /> Agregar mi primer ingrediente
                                 </button>
                             </div>
                         </div>
