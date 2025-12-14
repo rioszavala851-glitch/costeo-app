@@ -52,6 +52,21 @@
     border-radius: var(--radius);
     padding: 1.5rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.statCardClickable {
+    cursor: pointer;
+}
+
+.statCardClickable:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.statCardClickable:active {
+    transform: translateY(-2px);
 }
 
 .statHeader {
@@ -70,6 +85,24 @@
     margin: 0.5rem 0 0;
     font-size: 2rem;
     font-weight: bold;
+}
+
+.statHint {
+    margin: 0.75rem 0 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.statCardClickable:hover .statHint {
+    opacity: 1;
+}
+
+.statTrend {
+    margin: 0.5rem 0 0;
+    font-size: 0.8rem;
+    font-weight: 500;
 }
 
 .section {

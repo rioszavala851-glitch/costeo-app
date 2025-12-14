@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, DollarSign, Package, Plus, FilePlus, Cherry, Tag, X } from 'lucide-react';
+import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, TrendingDown, DollarSign, Package, Plus, FilePlus, Cherry, Tag, X } from 'lucide-react';
 import api from '../api';
 import styles from './Dashboard.module.css';
 
@@ -219,9 +219,15 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* Summary Cards */}
+                {/* Summary Cards - Clickable KPIs */}
                 <div className={styles.statsGrid}>
-                    <div className={`card ${styles.statCard}`} style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+                    <div
+                        className={`card ${styles.statCard} ${styles.statCardClickable}`}
+                        style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)', border: '1px solid rgba(59, 130, 246, 0.3)' }}
+                        onClick={() => navigate('/ingredients')}
+                        role="button"
+                        tabIndex={0}
+                    >
                         <div className={styles.statHeader}>
                             <div>
                                 <p className={styles.statLabel}>Ingredientes</p>
@@ -229,8 +235,15 @@ const Dashboard = () => {
                             </div>
                             <Package size={32} color="var(--accent-color)" style={{ opacity: 0.7 }} />
                         </div>
+                        <p className={styles.statHint}>Click para ver todos</p>
                     </div>
-                    <div className={`card ${styles.statCard}`} style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                    <div
+                        className={`card ${styles.statCard} ${styles.statCardClickable}`}
+                        style={{ background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)', border: '1px solid rgba(139, 92, 246, 0.3)' }}
+                        onClick={() => navigate('/subrecipes')}
+                        role="button"
+                        tabIndex={0}
+                    >
                         <div className={styles.statHeader}>
                             <div>
                                 <p className={styles.statLabel}>Sub-recetas</p>
@@ -238,8 +251,15 @@ const Dashboard = () => {
                             </div>
                             <ChefHat size={32} color="#8b5cf6" style={{ opacity: 0.7 }} />
                         </div>
+                        <p className={styles.statHint}>Click para ver todos</p>
                     </div>
-                    <div className={`card ${styles.statCard}`} style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    <div
+                        className={`card ${styles.statCard} ${styles.statCardClickable}`}
+                        style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)' }}
+                        onClick={() => navigate('/recipes')}
+                        role="button"
+                        tabIndex={0}
+                    >
                         <div className={styles.statHeader}>
                             <div>
                                 <p className={styles.statLabel}>Recetas</p>
@@ -247,15 +267,34 @@ const Dashboard = () => {
                             </div>
                             <UtensilsCrossed size={32} color="var(--success)" style={{ opacity: 0.7 }} />
                         </div>
+                        <p className={styles.statHint}>Click para ver todos</p>
                     </div>
-                    <div className={`card ${styles.statCard}`} style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                    <div
+                        className={`card ${styles.statCard}`}
+                        style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+                    >
                         <div className={styles.statHeader}>
                             <div>
                                 <p className={styles.statLabel}>Margen Promedio</p>
-                                <h2 className={styles.statValue}>{avgRecipeMargin.toFixed(1)}%</h2>
+                                <h2 className={styles.statValue} style={{
+                                    color: avgRecipeMargin >= 30 ? 'var(--success)' : avgRecipeMargin >= 15 ? '#f59e0b' : 'var(--danger)'
+                                }}>
+                                    {avgRecipeMargin.toFixed(1)}%
+                                </h2>
                             </div>
-                            <TrendingUp size={32} color="#f59e0b" style={{ opacity: 0.7 }} />
+                            {avgRecipeMargin >= 30 ? (
+                                <TrendingUp size={32} color="var(--success)" style={{ opacity: 0.9 }} />
+                            ) : avgRecipeMargin >= 15 ? (
+                                <TrendingUp size={32} color="#f59e0b" style={{ opacity: 0.7 }} />
+                            ) : (
+                                <TrendingDown size={32} color="var(--danger)" style={{ opacity: 0.9 }} />
+                            )}
                         </div>
+                        <p className={styles.statTrend} style={{
+                            color: avgRecipeMargin >= 30 ? 'var(--success)' : avgRecipeMargin >= 15 ? '#f59e0b' : 'var(--danger)'
+                        }}>
+                            {avgRecipeMargin >= 30 ? '✅ Excelente margen' : avgRecipeMargin >= 15 ? '⚠️ Margen aceptable' : '❌ Margen bajo'}
+                        </p>
                     </div>
                 </div>
 
