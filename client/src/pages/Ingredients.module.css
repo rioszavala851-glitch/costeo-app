@@ -186,15 +186,30 @@
     text-align: left;
     padding: 1rem;
     color: var(--text-secondary);
-    border-bottom: 1px solid var(--glass-border);
+    border-bottom: 2px solid var(--glass-border);
     font-weight: 600;
+    background: rgba(0, 0, 0, 0.1);
 }
 
 .td {
     padding: 1rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--glass-border);
     color: var(--text-primary);
     vertical-align: middle;
+}
+
+/* Zebra striping para filas alternas */
+.table tbody tr:nth-child(even) {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Hover en filas */
+.table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.05);
 }
 
 .actionsCell {
@@ -205,7 +220,7 @@
 
 .actionBtn {
     background: rgba(59, 130, 246, 0.1);
-    border: none;
+    border: 1px solid rgba(59, 130, 246, 0.3);
     color: var(--accent-color);
     padding: 0.5rem;
     border-radius: 0.5rem;
@@ -213,20 +228,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
+    transition: all 0.2s;
 }
 
 .actionBtn:hover {
     background: rgba(59, 130, 246, 0.2);
+    border-color: var(--accent-color);
+    transform: translateY(-1px);
 }
 
 .deleteBtn {
     background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
     color: var(--danger);
 }
 
 .deleteBtn:hover {
     background: rgba(239, 68, 68, 0.2);
+    border-color: var(--danger);
 }
 
 /* Media Queries para Móviles */
