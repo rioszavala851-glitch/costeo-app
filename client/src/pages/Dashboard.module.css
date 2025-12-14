@@ -251,8 +251,7 @@
 .fabContainer {
     position: fixed;
     bottom: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 1.5rem;
     display: flex;
     flex-direction: column-reverse;
     align-items: center;
@@ -357,8 +356,7 @@
 
     .fabContainer {
         bottom: 1rem;
-        left: 50%;
-        transform: translateX(-50%);
+        right: 1rem;
     }
 
     .fab {
