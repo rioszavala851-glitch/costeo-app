@@ -1,8 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, TrendingDown, DollarSign, Package, Plus, FilePlus, Cherry, Tag, X } from 'lucide-react';
+import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, TrendingDown, DollarSign, Package, Plus, FilePlus, Cherry, Tag, X, Clock } from 'lucide-react';
 import api from '../api';
 import styles from './Dashboard.module.css';
+import { useAuth } from '../contexts/AuthContext';
+
+// Helper para obtener saludo basado en la hora
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return '¡Buenos días';
+    if (hour < 18) return '¡Buenas tardes';
+    return '¡Buenas noches';
+};
+
+// Helper para formatear la hora
+const formatTime = () => {
+    return new Date().toLocaleTimeString('es-MX', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+};
+
+// Helper para formatear la fecha
+const formatDate = () => {
+    return new Date().toLocaleDateString('es-MX', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+    });
+};
 
 /**
  * Calcula el costo de un ingrediente/item para una sub-receta
@@ -46,12 +73,22 @@ const EmptyState = ({ icon: Icon, title, description, buttonText, onAction }) =>
 
 const Dashboard = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [ingredients, setIngredients] = useState([]);
     const [subRecipes, setSubRecipes] = useState([]);
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [fabOpen, setFabOpen] = useState(false);
+    const [currentTime, setCurrentTime] = useState(formatTime());
     const fabRef = useRef(null);
+
+    // Actualizar la hora cada minuto
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(formatTime());
+        }, 60000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Cerrar FAB al hacer clic fuera
     useEffect(() => {
@@ -210,12 +247,19 @@ const Dashboard = () => {
         <div className={styles.container}>
             <div className="animate-fade-in">
                 <div className={styles.header}>
-                    <div style={{ background: 'var(--accent-color)', padding: '0.75rem', borderRadius: 'var(--radius)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)' }}>
-                        <LayoutDashboard size={28} color="white" />
-                    </div>
-                    <div className={styles.titleContainer}>
-                        <h1 className={styles.title}>Dashboard</h1>
-                        <p className={styles.subtitle}>Resumen general de tu sistema de costeo</p>
+                    <div className={styles.welcomeSection}>
+                        <div className={styles.greetingRow}>
+                            <h1 className={styles.greeting}>
+                                {getGreeting()}, <span className={styles.userName}>{user?.name || 'Chef'}</span>! 👨‍🍳
+                            </h1>
+                        </div>
+                        <p className={styles.subtitle}>
+                            Aquí está el resumen de tu cocina hoy.
+                        </p>
+                        <div className={styles.timeInfo}>
+                            <Clock size={16} />
+                            <span>{formatDate()} • {currentTime}</span>
+                        </div>
                     </div>
                 </div>
 

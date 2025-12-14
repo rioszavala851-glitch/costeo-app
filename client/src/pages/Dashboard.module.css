@@ -6,9 +6,36 @@
 
 .header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
     margin-bottom: 2rem;
+}
+
+.welcomeSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.greetingRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.greeting {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.userName {
+    background: linear-gradient(135deg, var(--accent-color), #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
 }
 
 .titleContainer {
@@ -22,9 +49,22 @@
 }
 
 .subtitle {
-    margin: 0.25rem 0 0;
+    margin: 0;
     color: var(--text-secondary);
-    font-size: 0.9rem;
+    font-size: 1rem;
+}
+
+.timeInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.timeInfo svg {
+    opacity: 0.7;
 }
 
 .statsGrid {
