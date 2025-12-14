@@ -47,8 +47,14 @@ const Sidebar = ({ isOpen, toggleSidebar, closeSidebar, isMobile, theme, toggleT
         <div className={`${styles.sidebar} ${!isOpen ? styles.collapsed : ''}`}>
             {/* Header ... */}
             <div className={styles.header}>
-                {isOpen && <h2 className={styles.logoText}>CosteoApp</h2>}
-                <button onClick={toggleSidebar} className={styles.toggleBtn}>
+                {isOpen ? (
+                    <h2 className={styles.logoText}>CosteoApp</h2>
+                ) : (
+                    <div className={styles.logoIcon}>
+                        <ChefHat size={28} />
+                    </div>
+                )}
+                <button onClick={toggleSidebar} className={styles.toggleBtn} title={isOpen ? 'Colapsar menú' : 'Expandir menú'}>
                     {isOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
                 </button>
             </div>

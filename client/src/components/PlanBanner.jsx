@@ -136,7 +136,7 @@ const PlanBanner = ({ isOpen }) => {
                 onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
             >
                 <Crown size={14} />
-                Actualizar a Premium
+                Ser Premium
             </button>
         </div>
     );
