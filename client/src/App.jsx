@@ -126,7 +126,7 @@ function AppContent() {
                 <line x1="3" y1="18" x2="21" y2="18"></line>
               </svg>
             </button>
-            <h3 style={{ margin: 0 }}>CosteoApp</h3>
+            <h3 style={{ margin: 0 }}>Info chef 👨🏻‍🍳</h3>
           </div>
         )}
         <Routes>

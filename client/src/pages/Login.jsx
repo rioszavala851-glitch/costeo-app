@@ -94,7 +94,7 @@ const Login = () => {
                     <div className={styles.logoIcon}>
                         <ChefHat size={48} />
                     </div>
-                    <h1 className={styles.title}>CosteoApp</h1>
+                    <h1 className={styles.title}>Info chef 👨🏻‍🍳</h1>
                     <p className={styles.subtitle}>Sistema de Costeo de Recetas</p>
                 </div>
 

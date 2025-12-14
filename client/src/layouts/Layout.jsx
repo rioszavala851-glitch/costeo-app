@@ -24,7 +24,7 @@ const Layout = () => {
         md:translate-x-0
       `}>
                 {/* Aquí va tu contenido del menú (Logo, Lista de items, etc.) */}
-                <div className="p-4 font-bold text-2xl text-blue-400">CosteoApp</div>
+                <div className="p-4 font-bold text-2xl text-blue-400">Info chef 👨🏻‍🍳</div>
                 <nav>
                     {/* Tus items de menú */}
                 </nav>

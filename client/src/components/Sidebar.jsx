@@ -48,7 +48,7 @@ const Sidebar = ({ isOpen, toggleSidebar, closeSidebar, isMobile, theme, toggleT
             {/* Header ... */}
             <div className={styles.header}>
                 {isOpen ? (
-                    <h2 className={styles.logoText}>CosteoApp</h2>
+                    <h2 className={styles.logoText}>Info chef 👨🏻‍🍳</h2>
                 ) : (
                     <div className={styles.logoIcon}>
                         <ChefHat size={28} />
