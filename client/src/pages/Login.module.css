@@ -209,15 +209,16 @@
 }
 
 .input:focus {
-    border-color: #667eea;
+    border-color: #764ba2;
     background: white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.2);
+    transform: translateY(-1px);
 }
 
 [data-theme="dark"] .input:focus {
-    border-color: #764ba2;
+    border-color: #a78bfa;
     background: rgba(15, 23, 42, 0.8);
-    box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.2);
+    box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.25);
 }
 
 /* Better placeholder contrast */

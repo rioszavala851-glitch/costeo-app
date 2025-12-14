@@ -124,7 +124,7 @@ const Login = () => {
                                 className={`${styles.input} ${styles.inputWithIcon} ${fieldErrors.email ? styles.inputError : ''}`}
                                 placeholder="usuario@ejemplo.com"
                                 required
-                                autoComplete="email"
+                                autoComplete="username"
                                 disabled={loading}
                             />
                         </div>
