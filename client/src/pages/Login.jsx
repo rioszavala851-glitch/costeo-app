@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ChefHat, Lock, Mail, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ChefHat, Lock, Mail, AlertCircle, Eye, EyeOff, Loader2, ChevronDown, UserCircle } from 'lucide-react';
 import styles from './Login.module.css';
+
+// Demo credentials - only shown in development
+const DEMO_CREDENTIALS = [
+    { role: 'Admin', email: 'admin@costeo.com', password: 'admin', color: '#667eea' },
+    { role: 'Aux. Admin', email: 'aux@costeo.com', password: 'aux', color: '#10b981' },
+    { role: 'Chef', email: 'chef@costeo.com', password: 'chef', color: '#f59e0b' }
+];
+
+const isDevelopment = import.meta.env.DEV;
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -12,6 +21,7 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [fieldErrors, setFieldErrors] = useState({ email: false, password: false });
+    const [showDemoCredentials, setShowDemoCredentials] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -190,20 +200,49 @@ const Login = () => {
                     </button>
                 </form>
 
-                <div className={styles.demoCredentials}>
-                    <p className={styles.demoTitle}>Credenciales de prueba:</p>
-                    <div className={styles.demoList}>
-                        <div className={styles.demoItem}>
-                            <strong>Admin:</strong> admin@costeo.com / admin
-                        </div>
-                        <div className={styles.demoItem}>
-                            <strong>Aux. Administrativo:</strong> aux@costeo.com / aux
-                        </div>
-                        <div className={styles.demoItem}>
-                            <strong>Chef:</strong> chef@costeo.com / chef
+                {/* Demo Credentials - Only in Development */}
+                {isDevelopment && (
+                    <div className={styles.demoCredentials}>
+                        <button
+                            type="button"
+                            className={styles.demoToggle}
+                            onClick={() => setShowDemoCredentials(!showDemoCredentials)}
+                            aria-expanded={showDemoCredentials}
+                        >
+                            <span>Ver credenciales de prueba</span>
+                            <ChevronDown
+                                size={18}
+                                className={`${styles.chevronIcon} ${showDemoCredentials ? styles.chevronOpen : ''}`}
+                            />
+                        </button>
+
+                        <div className={`${styles.demoContent} ${showDemoCredentials ? styles.demoContentOpen : ''}`}>
+                            <p className={styles.demoHint}>Haz clic en un rol para autocompletar:</p>
+                            <div className={styles.demoList}>
+                                {DEMO_CREDENTIALS.map((cred) => (
+                                    <button
+                                        key={cred.role}
+                                        type="button"
+                                        className={styles.demoItem}
+                                        onClick={() => {
+                                            setEmail(cred.email);
+                                            setPassword(cred.password);
+                                            setFieldErrors({ email: false, password: false });
+                                            setError('');
+                                        }}
+                                        style={{ '--accent-color': cred.color }}
+                                    >
+                                        <UserCircle size={20} style={{ color: cred.color }} />
+                                        <div className={styles.demoItemInfo}>
+                                            <span className={styles.demoRole}>{cred.role}</span>
+                                            <span className={styles.demoEmail}>{cred.email}</span>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
