@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, DollarSign, Package, Plus, FilePlus } from 'lucide-react';
+import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, DollarSign, Package, Plus, FilePlus, Cherry, Tag, X } from 'lucide-react';
 import api from '../api';
 import styles from './Dashboard.module.css';
 
@@ -50,6 +50,19 @@ const Dashboard = () => {
     const [subRecipes, setSubRecipes] = useState([]);
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [fabOpen, setFabOpen] = useState(false);
+    const fabRef = useRef(null);
+
+    // Cerrar FAB al hacer clic fuera
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (fabRef.current && !fabRef.current.contains(event.target)) {
+                setFabOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -347,6 +360,43 @@ const Dashboard = () => {
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* Floating Action Button (FAB) */}
+            <div className={styles.fabContainer} ref={fabRef}>
+                {/* Menu de acciones rápidas */}
+                <div className={`${styles.fabMenu} ${fabOpen ? styles.fabMenuOpen : ''}`}>
+                    <button
+                        className={styles.fabMenuItem}
+                        onClick={() => { navigate('/ingredients'); setFabOpen(false); }}
+                    >
+                        <Cherry size={20} />
+                        <span>Nuevo Ingrediente</span>
+                    </button>
+                    <button
+                        className={styles.fabMenuItem}
+                        onClick={() => { navigate('/recipes'); setFabOpen(false); }}
+                    >
+                        <UtensilsCrossed size={20} />
+                        <span>Nueva Receta</span>
+                    </button>
+                    <button
+                        className={styles.fabMenuItem}
+                        onClick={() => { navigate('/categories'); setFabOpen(false); }}
+                    >
+                        <Tag size={20} />
+                        <span>Nueva Categoría</span>
+                    </button>
+                </div>
+
+                {/* Botón principal FAB */}
+                <button
+                    className={`${styles.fab} ${fabOpen ? styles.fabActive : ''}`}
+                    onClick={() => setFabOpen(!fabOpen)}
+                    aria-label="Acciones rápidas"
+                >
+                    {fabOpen ? <X size={28} /> : <Plus size={28} />}
+                </button>
             </div>
         </div>
     );
