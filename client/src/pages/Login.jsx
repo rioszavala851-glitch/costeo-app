@@ -76,11 +76,8 @@ const Login = () => {
 
     return (
         <div className={styles.container}>
-            <div className={styles.background}>
-                <div className={styles.shape}></div>
-                <div className={styles.shape}></div>
-                <div className={styles.shape}></div>
-            </div>
+            <div className={styles.backgroundImage}></div>
+            <div className={styles.backgroundOverlay}></div>
 
             <div className={styles.loginCard}>
                 <div className={styles.logoSection}>
@@ -101,32 +98,34 @@ const Login = () => {
 
                     <div className={styles.inputGroup}>
                         <label htmlFor="email" className={styles.label}>
-                            <Mail size={18} />
                             Correo Electrónico
                         </label>
-                        <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => {
-                                setEmail(e.target.value);
-                                setFieldErrors(prev => ({ ...prev, email: false }));
-                                setError('');
-                            }}
-                            className={`${styles.input} ${fieldErrors.email ? styles.inputError : ''}`}
-                            placeholder="usuario@ejemplo.com"
-                            required
-                            autoComplete="email"
-                            disabled={loading}
-                        />
+                        <div className={styles.inputWrapper}>
+                            <Mail size={20} className={styles.inputIcon} />
+                            <input
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    setFieldErrors(prev => ({ ...prev, email: false }));
+                                    setError('');
+                                }}
+                                className={`${styles.input} ${styles.inputWithIcon} ${fieldErrors.email ? styles.inputError : ''}`}
+                                placeholder="usuario@ejemplo.com"
+                                required
+                                autoComplete="email"
+                                disabled={loading}
+                            />
+                        </div>
                     </div>
 
                     <div className={styles.inputGroup}>
                         <label htmlFor="password" className={styles.label}>
-                            <Lock size={18} />
                             Contraseña
                         </label>
-                        <div className={styles.passwordWrapper}>
+                        <div className={styles.inputWrapper}>
+                            <Lock size={20} className={styles.inputIcon} />
                             <input
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
@@ -136,8 +135,8 @@ const Login = () => {
                                     setFieldErrors(prev => ({ ...prev, password: false }));
                                     setError('');
                                 }}
-                                className={`${styles.input} ${styles.passwordInput} ${fieldErrors.password ? styles.inputError : ''}`}
-                                placeholder="••••••••"
+                                className={`${styles.input} ${styles.inputWithIcon} ${styles.passwordInput} ${fieldErrors.password ? styles.inputError : ''}`}
+                                placeholder="Ingresa tu contraseña"
                                 required
                                 autoComplete="current-password"
                                 disabled={loading}
