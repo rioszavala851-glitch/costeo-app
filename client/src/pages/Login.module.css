@@ -124,7 +124,7 @@
 .form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .errorAlert {
@@ -132,18 +132,24 @@
     align-items: center;
     gap: 0.75rem;
     padding: 1rem;
-    background: #fee2e2;
-    border: 1px solid #fecaca;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border: 1px solid #f87171;
     border-radius: 12px;
     color: #dc2626;
     font-size: 0.9rem;
-    animation: slideDown 0.3s ease;
+    animation: shake 0.5s ease;
 }
 
 [data-theme="dark"] .errorAlert {
-    background: rgba(220, 38, 38, 0.1);
-    border-color: rgba(220, 38, 38, 0.3);
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%);
+    border-color: rgba(220, 38, 38, 0.4);
     color: #fca5a5;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 
 @keyframes slideDown {
@@ -209,6 +215,164 @@
     color: #94a3b8;
 }
 
+.input:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Input Error State */
+.inputError {
+    border-color: #f87171 !important;
+    background: rgba(254, 226, 226, 0.3);
+}
+
+[data-theme="dark"] .inputError {
+    border-color: #ef4444 !important;
+    background: rgba(220, 38, 38, 0.1);
+}
+
+.inputError:focus {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* Password Wrapper */
+.passwordWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.passwordInput {
+    padding-right: 3rem;
+}
+
+.passwordToggle {
+    position: absolute;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.passwordToggle:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #667eea;
+}
+
+[data-theme="dark"] .passwordToggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #a78bfa;
+}
+
+/* Options Row: Remember Me + Forgot Password */
+.optionsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: -0.25rem;
+}
+
+/* Custom Checkbox - Remember Me */
+.rememberMe {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #475569;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-left: 28px;
+}
+
+[data-theme="dark"] .rememberMe {
+    color: #94a3b8;
+}
+
+.rememberMe .checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] .checkmark {
+    background: rgba(15, 23, 42, 0.6);
+    border-color: #334155;
+}
+
+.rememberMe:hover .checkmark {
+    border-color: #667eea;
+}
+
+.rememberMe .checkbox:checked ~ .checkmark {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+}
+
+.checkmark::after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.rememberMe .checkbox:checked ~ .checkmark::after {
+    display: block;
+}
+
+/* Forgot Password Link */
+.forgotPassword {
+    background: none;
+    border: none;
+    color: #667eea;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+}
+
+.forgotPassword:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .forgotPassword {
+    color: #a78bfa;
+}
+
+[data-theme="dark"] .forgotPassword:hover {
+    color: #c4b5fd;
+}
+
 .submitButton {
     display: flex;
     align-items: center;
@@ -216,6 +380,7 @@
     gap: 0.5rem;
     width: 100%;
     padding: 1rem;
+    margin-top: 0.5rem;
     font-size: 1rem;
     font-weight: 600;
     color: white;
@@ -237,17 +402,14 @@
 }
 
 .submitButton:disabled {
-    opacity: 0.7;
+    opacity: 0.8;
     cursor: not-allowed;
+    transform: none;
 }
 
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
+/* Spinner Animation for Loader2 icon */
+.spinnerIcon {
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -324,5 +486,15 @@
     .logoIcon svg {
         width: 40px;
         height: 40px;
+    }
+
+    .optionsRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .forgotPassword {
+        align-self: flex-end;
     }
 }

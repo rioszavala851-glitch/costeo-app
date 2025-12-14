@@ -1,31 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ChefHat, Lock, Mail, AlertCircle } from 'lucide-react';
+import { ChefHat, Lock, Mail, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import styles from './Login.module.css';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState({ email: false, password: false });
     const { login } = useAuth();
     const navigate = useNavigate();
+
+    // Load remembered email on mount
+    useEffect(() => {
+        const rememberedEmail = localStorage.getItem('rememberedEmail');
+        if (rememberedEmail) {
+            setEmail(rememberedEmail);
+            setRememberMe(true);
+        }
+    }, []);
+
+    const validateForm = () => {
+        const errors = { email: false, password: false };
+        let isValid = true;
+
+        if (!email || !email.includes('@')) {
+            errors.email = true;
+            isValid = false;
+        }
+        if (!password || password.length < 3) {
+            errors.password = true;
+            isValid = false;
+        }
+
+        setFieldErrors(errors);
+        return isValid;
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (!validateForm()) {
+            setError('Por favor, completa todos los campos correctamente.');
+            return;
+        }
+
         setLoading(true);
 
         const result = await login(email, password);
 
         if (result.success) {
+            // Handle remember me
+            if (rememberMe) {
+                localStorage.setItem('rememberedEmail', email);
+            } else {
+                localStorage.removeItem('rememberedEmail');
+            }
             navigate('/');
         } else {
-            setError(result.message);
+            setError(result.message || 'Usuario o contraseña incorrectos');
+            setFieldErrors({ email: true, password: true });
         }
 
         setLoading(false);
+    };
+
+    const handleForgotPassword = () => {
+        alert('Funcionalidad de recuperación de contraseña próximamente. Por favor, contacta al administrador.');
     };
 
     return (
@@ -62,11 +108,16 @@ const Login = () => {
                             id="email"
                             type="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className={styles.input}
+                            onChange={(e) => {
+                                setEmail(e.target.value);
+                                setFieldErrors(prev => ({ ...prev, email: false }));
+                                setError('');
+                            }}
+                            className={`${styles.input} ${fieldErrors.email ? styles.inputError : ''}`}
                             placeholder="usuario@ejemplo.com"
                             required
                             autoComplete="email"
+                            disabled={loading}
                         />
                     </div>
 
@@ -75,16 +126,53 @@ const Login = () => {
                             <Lock size={18} />
                             Contraseña
                         </label>
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className={styles.input}
-                            placeholder="••••••••"
-                            required
-                            autoComplete="current-password"
-                        />
+                        <div className={styles.passwordWrapper}>
+                            <input
+                                id="password"
+                                type={showPassword ? 'text' : 'password'}
+                                value={password}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    setFieldErrors(prev => ({ ...prev, password: false }));
+                                    setError('');
+                                }}
+                                className={`${styles.input} ${styles.passwordInput} ${fieldErrors.password ? styles.inputError : ''}`}
+                                placeholder="••••••••"
+                                required
+                                autoComplete="current-password"
+                                disabled={loading}
+                            />
+                            <button
+                                type="button"
+                                className={styles.passwordToggle}
+                                onClick={() => setShowPassword(!showPassword)}
+                                tabIndex={-1}
+                                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className={styles.optionsRow}>
+                        <label className={styles.rememberMe}>
+                            <input
+                                type="checkbox"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                                className={styles.checkbox}
+                                disabled={loading}
+                            />
+                            <span className={styles.checkmark}></span>
+                            Recordarme
+                        </label>
+                        <button
+                            type="button"
+                            className={styles.forgotPassword}
+                            onClick={handleForgotPassword}
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </button>
                     </div>
 
                     <button
@@ -94,7 +182,7 @@ const Login = () => {
                     >
                         {loading ? (
                             <>
-                                <div className={styles.spinner}></div>
+                                <Loader2 size={20} className={styles.spinnerIcon} />
                                 Iniciando sesión...
                             </>
                         ) : (
@@ -123,3 +211,4 @@ const Login = () => {
 };
 
 export default Login;
+
