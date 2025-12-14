@@ -250,8 +250,8 @@
 /* Floating Action Button (FAB) */
 .fabContainer {
     position: fixed;
-    bottom: 1rem;
-    right: 1.5rem;
+    bottom: 0.5rem;
+    right: 0.75rem;
     display: flex;
     flex-direction: column-reverse;
     align-items: center;
