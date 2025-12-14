@@ -116,6 +116,64 @@
     border-bottom: 1px solid var(--glass-border);
 }
 
+/* Empty State Styles */
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    background: rgba(var(--background-rgb), 0.5);
+    border-radius: var(--radius);
+    border: 1px dashed var(--border-color, #e2e8f0);
+}
+
+[data-theme="dark"] .emptyState {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.emptyIcon {
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+.emptyText {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    max-width: 300px;
+    line-height: 1.5;
+}
+
+.ctaButton {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.ctaButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    filter: brightness(1.1);
+}
+
+.ctaButton:active {
+    transform: translateY(0);
+}
+
 /* Mobile First Adjustments if needed specifically */
 @media (max-width: 768px) {
     .header {

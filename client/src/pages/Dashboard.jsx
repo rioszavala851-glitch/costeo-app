@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, DollarSign, Package } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { LayoutDashboard, ChefHat, UtensilsCrossed, TrendingUp, DollarSign, Package, Plus, FilePlus } from 'lucide-react';
 import api from '../api';
 import styles from './Dashboard.module.css';
 
@@ -28,7 +29,23 @@ const calculateItemCost = (price, yieldPercent, priceUnit, useUnit, quantity) =>
     return unitCost * qtyNum;
 };
 
+// Componente para Estados Vacíos
+const EmptyState = ({ icon: Icon, title, description, buttonText, onAction }) => (
+    <div className={styles.emptyState}>
+        <div className={styles.emptyIcon}>
+            <Icon size={64} strokeWidth={1} />
+        </div>
+        <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>{title}</h4>
+        <p className={styles.emptyText}>{description}</p>
+        <button className={styles.ctaButton} onClick={onAction}>
+            <Plus size={18} />
+            {buttonText}
+        </button>
+    </div>
+);
+
 const Dashboard = () => {
+    const navigate = useNavigate();
     const [ingredients, setIngredients] = useState([]);
     const [subRecipes, setSubRecipes] = useState([]);
     const [recipes, setRecipes] = useState([]);
@@ -236,7 +253,13 @@ const Dashboard = () => {
                         <h3 className={styles.sectionTitle}>Sub-recetas</h3>
                     </div>
                     {subRecipes.length === 0 ? (
-                        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No hay sub-recetas creadas aún.</p>
+                        <EmptyState
+                            icon={ChefHat}
+                            title="No tienes sub-recetas"
+                            description="Agrupa ingredientes comunes (como salsas o masas) para usarlos en múltiples platillos."
+                            buttonText="Crear Sub-receta"
+                            onAction={() => navigate('/subrecipes')}
+                        />
                     ) : (
                         <div className={styles.tableWrapper}>
                             <table className={styles.table}>
@@ -277,7 +300,13 @@ const Dashboard = () => {
                         <h3 className={styles.sectionTitle}>Recetas / Platillos</h3>
                     </div>
                     {recipes.length === 0 ? (
-                        <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem' }}>No hay recetas creadas aún.</p>
+                        <EmptyState
+                            icon={UtensilsCrossed}
+                            title="No tienes recetas todavía"
+                            description="Comienza a calcular tus costos ahora creando tu primer platillo completo."
+                            buttonText="Crear Nueva Receta"
+                            onAction={() => navigate('/recipes')}
+                        />
                     ) : (
                         <div className={styles.tableWrapper}>
                             <table className={styles.table}>
